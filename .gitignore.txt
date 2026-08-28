@@ -1,0 +1,19 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+.env
+
+# Node
+node_modules/
+dist/
+.env.local
+
+# IDE
+.vscode/
+.idea/
+
+# Credentials
+*.json
+!package.json
+!package-lock.json
