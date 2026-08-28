@@ -1,0 +1,61 @@
+flight_id,airline,origin,destination,base_price
+FL501,SpiceJet,Delhi,Kolkata,8532.5
+FL502,SpiceJet,Chennai,Delhi,10174.62
+FL503,AirAsia,Kolkata,Delhi,7511.71
+FL504,IndiGo,Goa,Mumbai,6024.94
+FL505,IndiGo,Kolkata,Chennai,3876.76
+FL506,Air India,Goa,Delhi,9092.23
+FL507,SpiceJet,Chennai,Goa,8350.96
+FL508,AirAsia,Mumbai,Chennai,7226.75
+FL509,Vistara,Mumbai,Goa,2720.63
+FL510,IndiGo,Hyderabad,Mumbai,10181.82
+FL511,Air India,Mumbai,Kolkata,7744.03
+FL512,SpiceJet,Bangalore,Kolkata,3935.43
+FL513,SpiceJet,Hyderabad,Mumbai,10725.91
+FL514,Air India,Delhi,Mumbai,4481.34
+FL515,AirAsia,Goa,Hyderabad,11893.78
+FL516,AirAsia,Mumbai,Delhi,7025.09
+FL517,Air India,Goa,Chennai,5741.7
+FL518,SpiceJet,Delhi,Hyderabad,5273.88
+FL519,SpiceJet,Chennai,Hyderabad,5520.54
+FL520,Vistara,Chennai,Kolkata,2754.94
+FL521,SpiceJet,Mumbai,Bangalore,2526.9
+FL522,AirAsia,Mumbai,Hyderabad,9607.67
+FL523,AirAsia,Delhi,Hyderabad,5527.09
+FL524,Air India,Kolkata,Mumbai,8861.92
+FL525,Vistara,Hyderabad,Bangalore,5792.83
+FL526,Air India,Kolkata,Bangalore,3481.1
+FL527,SpiceJet,Mumbai,Bangalore,6061.32
+FL528,AirAsia,Hyderabad,Mumbai,11037.63
+FL529,Air India,Delhi,Kolkata,11633.58
+FL530,Vistara,Kolkata,Mumbai,7163.66
+FL531,Air India,Chennai,Goa,11394.73
+FL532,AirAsia,Delhi,Bangalore,3158.68
+FL533,SpiceJet,Goa,Chennai,3045.59
+FL534,Vistara,Bangalore,Mumbai,8755.05
+FL535,Air India,Mumbai,Kolkata,4120.98
+FL536,Air India,Mumbai,Chennai,11842.75
+FL537,SpiceJet,Hyderabad,Goa,2969.32
+FL538,AirAsia,Delhi,Goa,11158.73
+FL539,Air India,Chennai,Mumbai,11044.67
+FL540,Vistara,Bangalore,Delhi,8212.88
+FL541,AirAsia,Chennai,Kolkata,11074.59
+FL542,Air India,Chennai,Bangalore,7576.18
+FL543,IndiGo,Bangalore,Delhi,6132.48
+FL544,IndiGo,Delhi,Goa,5012.0
+FL545,Air India,Bangalore,Goa,10590.98
+FL546,Vistara,Kolkata,Chennai,8989.89
+FL547,Air India,Goa,Delhi,3848.69
+FL548,Air India,Chennai,Mumbai,2740.51
+FL549,IndiGo,Chennai,Delhi,10739.69
+FL550,Air India,Hyderabad,Bangalore,5388.25
+FL551,SpiceJet,Bangalore,Kolkata,10935.58
+FL552,Air India,Kolkata,Delhi,4247.46
+FL553,AirAsia,Chennai,Delhi,9692.03
+FL554,AirAsia,Kolkata,Goa,10801.76
+FL555,IndiGo,Goa,Mumbai,6182.66
+FL556,SpiceJet,Goa,Mumbai,9757.24
+FL557,Air India,Delhi,Goa,4902.61
+FL558,Vistara,Hyderabad,Kolkata,9585.19
+FL559,Air India,Delhi,Kolkata,5439.41
+FL560,AirAsia,Bangalore,Hyderabad,7155.56

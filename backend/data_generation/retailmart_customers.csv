@@ -1,0 +1,201 @@
+customer_id,name,email,signup_date,city
+C101,Allison Hill,donaldgarcia@example.net,2026-07-20,New Roberttown
+C102,David Guzman,jennifermiles@example.com,2025-02-14,Lawrencetown
+C103,Caitlin Henderson,eric51@example.org,2025-06-18,West Melanieview
+C104,Monica Herrera,smiller@example.net,2025-12-20,Barbaraland
+C105,Darren Roberts,wyattmichelle@example.com,2025-03-30,Reidstad
+C106,Henry Santiago,lynchgeorge@example.net,2025-03-05,South Noah
+C107,Margaret Hawkins DDS,perezantonio@example.com,2025-07-04,Carlshire
+C108,Emily Rios,pwilkerson@example.com,2024-12-15,Donaldside
+C109,Nicole Patterson,icox@example.net,2025-09-14,Port Brandonville
+C110,Christopher Becker,cruzcaitlin@example.com,2025-10-11,Tashatown
+C111,Ashley Dyer,kayla51@example.com,2025-07-30,South Aaron
+C112,Michelle Stanton,williamrodriguez@example.net,2025-04-15,East Nathaniel
+C113,Troy Nielsen,georgetracy@example.org,2025-06-04,Johnbury
+C114,Theresa Miller,wcabrera@example.net,2026-04-13,East Donna
+C115,Carmen Rose,ibrandt@example.net,2026-02-13,Lake Larry
+C116,Marie Kim DDS,wrightcaleb@example.org,2025-11-26,New Jeffrey
+C117,Mark Perez,heathchad@example.org,2025-03-31,Lewisberg
+C118,Sonya Johnston,kristenaguirre@example.org,2024-11-08,Lake Ryanchester
+C119,Scott Brown,brownjessica@example.org,2025-03-08,East Amanda
+C120,Clifford Ford,ramosmichelle@example.net,2024-11-11,Lake Yvettetown
+C121,Tammy Allison,richardolson@example.com,2024-10-11,South Aaron
+C122,Timothy Glover,rodney87@example.org,2025-01-21,Jeffton
+C123,Kimberly Adkins,williamsthomas@example.net,2024-12-27,New Christopherburgh
+C124,Barry Hensley,kwilson@example.org,2025-11-19,New Christophershire
+C125,Emily Green,john62@example.net,2026-01-10,Stephenland
+C126,Marc Hart,jonesjason@example.com,2024-12-07,Nicolebury
+C127,Christopher Bass,cheryl80@example.net,2026-05-23,Sarahville
+C128,Brandy Wilson,newtoneric@example.com,2025-12-09,Lake Matthew
+C129,Sarah Wagner,rebecca01@example.net,2025-07-22,Bradleymouth
+C130,Mandy Green,barnold@example.net,2024-09-03,North Sierraberg
+C131,Sandra Aguilar,russellwilliams@example.com,2026-07-26,West Jasonbury
+C132,Heather Castro,vdickson@example.org,2025-02-26,Port Lisa
+C133,Allison Doyle,kimberly63@example.com,2024-12-28,South Monicafort
+C134,Robert Stevens,lori33@example.org,2026-01-21,South Mark
+C135,Tracy Ramirez,,2024-09-17,West Gregoryview
+C136,Kyle Reed,samuel81@example.com,2026-07-26,West Bradley
+C137,Joseph Drake,michaeljones@example.net,2025-05-10,Elizabethville
+C138,Elizabeth Parker,snguyen@example.com,2025-10-31,East Robert
+C139,Megan Orr,richard04@example.com,2025-02-06,Floydmouth
+C140,Jeremy Lewis,yleon@example.net,2025-01-05,West Zacharymouth
+C141,Trevor Young,,2024-10-01,South Cheryl
+C142,Joy Mercado,jennifercruz@example.com,2025-03-04,Lake Grace
+C143,Shannon Mcclure,zrobinson@example.net,2025-10-03,Williamsbury
+C144,Barbara Anderson,jcontreras@example.net,2025-04-30,Salazarhaven
+C145,Terry Griffin,juliawells@example.com,2026-04-02,Port Dana
+C146,Kelly Sims,scott43@example.com,2025-05-14,Patricialand
+C147,David Benson,calebrussell@example.net,2025-08-23,Brownchester
+C148,Randy Shah,gateskathy@example.com,2025-09-01,West Kennethfurt
+C149,Tiffany Barnes,tracynelson@example.com,2024-09-18,Rogersfurt
+C150,Sara Calhoun,meadowsbrittany@example.net,2024-09-17,Lake Roymouth
+C151,David Murphy,wmurphy@example.com,2025-03-31,Kingland
+C152,Paul Williams,jeffrey10@example.org,2025-03-07,Port Andrew
+C153,Cameron Caldwell,stevenscott@example.com,2025-01-04,Port Loriport
+C154,Alexander Collins,tsanders@example.org,2024-10-25,North Heidi
+C155,Michael Trujillo,reedross@example.com,2024-10-19,Alexanderchester
+C156,Ashley Yu,bzimmerman@example.org,2026-03-19,Christinaside
+C157,Julie Petersen,marcus31@example.com,2026-07-12,Sanchezmouth
+C158,Mary Rogers,lrosales@example.com,2025-02-07,Laurenmouth
+C159,Kyle Beard,,2026-03-09,Freemanbury
+C160,Maria Henry,davisjeffrey@example.net,2025-03-03,Elizabethstad
+C161,Joseph Coleman,michael74@example.com,2025-03-10,North Jennifer
+C162,Patrick Tapia,jamesrodgers@example.com,2026-03-12,Tinaborough
+C163,Isaac Turner,joshuamccann@example.net,2025-04-10,Lake Miranda
+C164,Shane Andrews MD,dpeterson@example.com,2026-06-27,Wilsonland
+C165,Benjamin Soto,hernandezlisa@example.com,2024-11-01,North Angela
+C166,Kyle Montgomery,chayes@example.com,2026-06-26,Torreston
+C167,Natalie Meza,colleenbaker@example.org,2024-12-26,East Andrea
+C168,Jason Norris,ocarter@example.com,2026-02-27,Jacquelinemouth
+C169,David Baker,ronaldstephens@example.net,2024-12-20,Margaretland
+C170,Ricky Larson,scott74@example.net,2025-07-05,Vincentfort
+C171,Kyle Preston,cassandra01@example.org,2026-02-01,Port Emilyview
+C172,Pamela Thompson,lmoon@example.net,2025-07-31,Costafort
+C173,Gary Santiago,marksteele@example.com,2026-01-23,Cervantesside
+C174,Brandon King,cordovarichard@example.net,2026-05-29,Lake Mollymouth
+C175,Cody Cox,wgarrett@example.org,2025-02-01,Andreaport
+C176,Michael Martinez,jennifercollins@example.org,2025-10-29,Davisville
+C177,Bruce Collier,scantu@example.net,2026-02-25,Robertfort
+C178,Mrs. Kristen Reyes,michellehill@example.com,2025-05-17,Loriport
+C179,Sara Carpenter,cgrimes@example.net,2025-09-07,Martinside
+C180,Timothy Kane,ashleyhall@example.com,2024-09-29,Juliefurt
+C181,Matthew Hoover,tylerjohnson@example.net,2025-11-28,Mollymouth
+C182,Thomas Smith,robertpena@example.org,2024-10-24,Harringtonview
+C183,Michael Santos,melissa86@example.com,2025-12-26,Brennanton
+C184,Cynthia Cohen,wendy16@example.org,2026-04-09,South Garrettport
+C185,Amber Flynn,michael62@example.org,2025-10-13,Knightburgh
+C186,Bob Pitts,tyleraguilar@example.org,2025-08-20,Stevetown
+C187,Julie Roberts,charleslandry@example.net,2025-04-16,Vaughnmouth
+C188,Christina Cruz,yrodriguez@example.net,2025-06-01,Victoriaport
+C189,Ronald Foster,knightgina@example.net,2024-10-04,Wallport
+C190,Crystal Pham,danaoliver@example.net,2026-04-05,Lake Colton
+C191,Amanda Kramer,rileyjessica@example.org,2025-04-13,Julieburgh
+C192,Richard Walter,alyssa42@example.com,2026-05-29,Coffeyport
+C193,Gina Wilson,taylortammy@example.net,2026-03-12,Coffeyside
+C194,Richard Smith,gibsonemily@example.net,2025-03-18,Carsonstad
+C195,David Johnson,rose31@example.net,2026-05-28,Blankenshipport
+C196,Audrey Williams,torrestravis@example.org,2025-02-25,South Shawn
+C197,Natalie Bautista,umatthews@example.org,2026-07-15,Penafort
+C198,Teresa Ramirez,jeff73@example.com,2024-11-12,Amystad
+C199,Donald Donaldson,ndavis@example.net,2026-01-05,North Kristinbury
+C200,Rachel Harris DVM,brendali@example.org,2025-05-09,Port Rachel
+C201,Scott Thomas,amberlindsey@example.org,2026-01-22,East Alexisbury
+C202,Alexis Baker,judyfox@example.net,2024-10-15,Weststad
+C203,Ashley Gordon,,2025-10-06,Stephentown
+C204,John Morales,henryrenee@example.org,2026-07-26,West Charleneland
+C205,Marcus Richards,oscar98@example.com,2025-08-14,Garciaville
+C206,Marilyn Mack,russellbeasley@example.com,2025-05-17,Rossville
+C207,Erik Scott,gloriawells@example.org,2026-06-04,North Ryanstad
+C208,Kristie Willis,elizabeth65@example.net,2026-04-01,Parrishton
+C209,Lindsay Bell,ericolson@example.org,2025-05-25,Dannyview
+C210,Renee Bruce,lynchdiane@example.net,2025-03-22,East Joshuaport
+C211,Heather White,ashleymorales@example.org,2026-03-25,North Julieborough
+C212,Jesse Moore,jennifer99@example.org,2026-07-14,East Ericton
+C213,Denise Stanley,alawson@example.com,2025-02-10,West Russellport
+C214,Leslie Rose,brandon69@example.org,2024-09-01,West Sierra
+C215,Pamela Roberts,smithjulie@example.org,2024-12-05,Patelbury
+C216,Sandra Drake,sandersjudy@example.com,2024-09-10,Morsemouth
+C217,Laura Mckinney,zroberts@example.org,2025-05-06,Port Stacey
+C218,Michael Cox,prichard@example.com,2025-11-27,Warrenfurt
+C219,Nichole Walker,charlesschultz@example.net,2025-09-27,Port Michael
+C220,Sabrina Briggs,curtisscott@example.org,2025-12-07,Port Katherine
+C221,Trevor Burton,wwebster@example.net,2025-08-10,Michellemouth
+C222,Barry Ramos,laura90@example.com,2025-09-25,West Steventon
+C223,Ronald Jones,gilbertwilliam@example.com,2025-11-20,South Reginashire
+C224,Erica Alvarez,susanhayes@example.com,2026-03-04,New Debbieton
+C225,Jeffrey Gonzales,michaelhardin@example.com,2025-07-10,Erikaton
+C226,Maria Jones,grantpaul@example.com,2026-03-12,West Christopher
+C227,Sydney Collins,tanderson@example.org,2025-04-24,Schneidermouth
+C228,Meagan Calderon,lucasrodney@example.com,2024-09-10,Kyleborough
+C229,Ralph Lee,ericphillips@example.org,2025-09-25,Lake Matthewberg
+C230,Brittany White,jenniferwilliams@example.com,2026-02-03,South Cheryl
+C231,Rachel Young,kylestokes@example.com,2026-06-06,West Erika
+C232,Jessica Hammond,ashaw@example.org,2026-05-23,Port Cassandra
+C233,Amy Castillo,angela18@example.org,2025-04-05,Port Ethanmouth
+C234,Brittany Kim,lisawilkerson@example.org,2025-07-15,South Waynebury
+C235,Brad Walker,sarah52@example.org,2024-09-25,Samanthafort
+C236,Brenda Thornton,fgilbert@example.org,2025-03-13,Port Edward
+C237,Lisa Henderson,john10@example.org,2025-07-19,Brownfort
+C238,Alexis Robertson,jennifercarter@example.org,2025-12-17,Johnchester
+C239,Michael Mills,carlos88@example.net,2026-04-29,South Morganton
+C240,Veronica King,kellycarlos@example.org,2026-03-19,Port Bonniemouth
+C241,Harold Morgan,mariacohen@example.net,2025-09-02,Port Dennis
+C242,Terri Johnson,bradleygonzalez@example.org,2025-04-29,Zacharyside
+C243,Andrew Lucas,michael05@example.com,2024-12-01,Samuelfurt
+C244,Stephanie Hughes,tylerjimenez@example.net,2025-03-22,Lake Rogerchester
+C245,Samantha Gardner,curtis54@example.com,2025-08-08,Jacksonmouth
+C246,Andrew Berg,christina64@example.net,2026-05-03,North Emilyfurt
+C247,Robert Shelton,thomascathy@example.com,2024-09-23,North Joel
+C248,Heidi Herring,jacobserika@example.com,2025-06-11,Hinesshire
+C249,Jacob Edwards,john10@example.net,2025-01-18,Holmesside
+C250,Reginald Padilla,wendymitchell@example.com,2025-01-29,East Melissamouth
+C251,Micheal Osborn,elizabeth18@example.net,2025-04-09,Melissaburgh
+C252,Katie Martinez,laurayoung@example.com,2024-09-16,Angelastad
+C253,William Anderson,jonesraymond@example.net,2026-03-08,Foxchester
+C254,Angela Compton,coleerin@example.com,2024-12-04,Port Tammy
+C255,Thomas Brown,holmeskevin@example.org,2025-05-04,West Stacey
+C256,Diane Miller,cynthiapierce@example.org,2025-12-25,Christinaland
+C257,Caroline David,georgeweber@example.net,2025-05-16,Port Michelleland
+C258,Martin Ray,katiebutler@example.net,2024-09-19,Smallside
+C259,Tyler Webb,eevans@example.net,2024-10-12,South Robert
+C260,Gerald Thomas,jessica56@example.org,2026-04-09,Zacharyville
+C261,John Adams,donaldwilliams@example.com,2026-06-29,Wrightburgh
+C262,Taylor Griffith,kathrynjimenez@example.net,2025-08-24,Kochfort
+C263,Tony Wagner,jasongomez@example.org,2025-04-02,Harperfort
+C264,Adam Rodriguez,nicoleluna@example.com,2025-06-07,South Brettside
+C265,Juan Jones,rduran@example.net,2026-02-06,East Theresafurt
+C266,William Grant,kari39@example.net,2025-07-04,North Benjaminmouth
+C267,Kelly Hernandez,markaustin@example.org,2025-06-28,Brittneyhaven
+C268,Kim Erickson,thomas05@example.com,2026-02-01,South Brandytown
+C269,Deborah Rios,jennifersilva@example.org,2025-10-08,Hernandezbury
+C270,Travis Rodriguez,alexanderrobert@example.com,2026-02-14,South Warren
+C271,Kaitlyn Charles,thorntonapril@example.net,2025-05-06,Foxmouth
+C272,Julia Patel,erica49@example.com,2025-01-23,West Angela
+C273,William Evans,janet75@example.com,2025-05-24,Keithshire
+C274,Jamie Baird,stephanie24@example.org,2025-04-07,West Sandraview
+C275,Cindy Clayton,sarah42@example.org,2025-12-18,East Brent
+C276,Courtney Hall,gutierrezjennifer@example.org,2026-02-07,North Tamara
+C277,Brooke Delgado,mwoods@example.com,2025-05-03,Debbieland
+C278,Crystal Rodgers,gentrygregory@example.org,2024-09-24,Frenchburgh
+C279,Tonya Howe,smithashley@example.org,2025-05-14,Shawnside
+C280,Stacy Anderson,znelson@example.org,2025-05-10,Lake Stephen
+C281,Cody Doyle,ashley32@example.net,2026-06-22,Wilcoxhaven
+C282,James Davis,thomasboyle@example.org,2025-03-17,Youngview
+C283,Elizabeth Sharp,greenmichael@example.org,2024-10-14,South Kurtfurt
+C284,Tammy Barron,hannah45@example.net,2025-02-14,East Timothy
+C285,William Brooks,,2026-05-30,Port John
+C286,Shelley Miller,xrice@example.org,2025-11-08,North Mariahaven
+C287,Joshua Martin,nwilson@example.net,2025-11-22,Davishaven
+C288,Anthony Anderson,dbryant@example.net,2025-08-21,Jenniferfurt
+C289,Aaron Robinson,williamsmelvin@example.org,2025-10-21,North Valeriefort
+C290,Jason Mack,ybrooks@example.com,2026-07-03,Bennettside
+C291,Scott Wilson,urice@example.org,2026-06-06,Port Andrewport
+C292,Nathan Coleman,pmorrow@example.com,2025-05-22,West Jacob
+C293,Pamela Johnson,bmendez@example.org,2025-02-03,North Brittneymouth
+C294,Michele Williams,moralesjimmy@example.org,2026-04-04,East Williamport
+C295,Thomas Johnston,joel28@example.org,2025-07-14,Joshuaside
+C296,Sheryl Buck,dpeters@example.com,2026-01-08,Floydmouth
+C297,Jennifer Evans,karenwells@example.org,2025-04-17,Port Steven
+C298,Jason Butler,paulscott@example.com,2026-01-11,South Melanieland
+C299,Sandra Williams,mnunez@example.org,2026-07-06,East Lindashire
+C300,Kristin Mendoza,kevin03@example.org,2026-03-25,Lake Yvonnefort

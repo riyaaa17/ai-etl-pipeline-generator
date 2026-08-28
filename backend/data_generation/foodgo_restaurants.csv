@@ -1,0 +1,41 @@
+restaurant_id,restaurant_name,cuisine,city,rating
+R301,Hughes-Wilson,Mexican,Port Christine,4.7
+R302,"Parker, Boone and Johnson",Mexican,Ashleyside,3.6
+R303,Cook-Hernandez,Continental,Lindaville,3.0
+R304,Bowers and Sons,Continental,Port Amanda,3.7
+R305,"Cooper, Martin and Lee",Continental,West Hannah,4.5
+R306,Rodriguez-Cobb,Indian,Charleneview,3.6
+R307,Wright Inc,Chinese,New Pamela,2.7
+R308,"Carter, King and Anderson",Fast Food,Jonestown,4.1
+R309,Leon-Harding,Continental,Port Peter,5.0
+R310,"Bond, Lynch and Stephens",Mexican,New Karen,4.1
+R311,"Calhoun, Rowe and Green",Continental,South Sharonstad,4.1
+R312,"Cobb, Hall and Chavez",Continental,Michaelborough,2.5
+R313,"Wagner, Knight and Bailey",Continental,North Stephanie,2.7
+R314,Andrews Ltd,Indian,West Rachelville,3.0
+R315,"Woodward, Lee and Richardson",Chinese,Monicaton,4.0
+R316,"Ortega, Taylor and Gutierrez",Mexican,Lake Terri,3.3
+R317,"Daniels, Kim and Shelton",Continental,New Heatherfort,4.6
+R318,Hobbs Inc,Continental,Taylorborough,3.1
+R319,Steele Inc,Italian,East Rachelview,3.7
+R320,Robinson-Nelson,Fast Food,New Stephanie,2.7
+R321,Garrison Inc,Fast Food,Popeshire,3.2
+R322,"Villanueva, Stewart and Jackson",Continental,North Daniel,5.0
+R323,Booth-Krueger,Indian,South Anthonyburgh,4.3
+R324,"Jacobs, Bradford and Wang",Italian,North Nathanborough,4.4
+R325,Whitaker-Russell,Continental,Jeffreyfurt,3.2
+R326,Roach and Sons,Indian,Brandonstad,3.9
+R327,"Sharp, Boyd and Bell",Indian,South Gregory,3.5
+R328,Lewis Group,Italian,Walkermouth,3.5
+R329,Allen Ltd,Indian,Caitlinshire,4.6
+R330,Berry-Johnson,Indian,Jesseport,3.0
+R331,"Rivera, Barber and Craig",Indian,New Christopher,3.7
+R332,"Hines, Sanchez and Robinson",Fast Food,Hawkinsberg,3.5
+R333,Santiago-Jones,Indian,Port Paulberg,3.9
+R334,Clarke-Casey,Chinese,Victoriaborough,4.4
+R335,Knox-Hart,Italian,South Territown,3.3
+R336,Porter Group,Italian,South Robinberg,3.3
+R337,Harris Group,Mexican,West Matthew,4.4
+R338,Thomas Ltd,Indian,Sonyaborough,2.8
+R339,Taylor Ltd,Fast Food,Port Jessica,2.8
+R340,"Chavez, Watson and Wilson",Indian,Dwayneland,3.7
