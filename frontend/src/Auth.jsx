@@ -10,6 +10,7 @@ export default function Auth() {
   const [password, setPassword] = useState("");
   const [mode, setMode] = useState("login"); // "login" or "signup"
   const [message, setMessage] = useState("");
+  const [loggedIn, setLoggedIn] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,15 +24,28 @@ export default function Auth() {
       }
 
       const idToken = await userCredential.user.getIdToken();
+      window.currentToken = idToken; // temporarily store for test buttons below
 
-      // Call the protected backend endpoint to verify it works end-to-end
       const res = await fetch("http://localhost:8000/me", {
         headers: { Authorization: `Bearer ${idToken}` },
       });
       const data = await res.json();
-      setMessage(`Success! Logged in as: ${data.email} (${data.role} at ${data.client_name})`);
-      
 
+      setMessage(`Success! Logged in as: ${data.email} (${data.role} at ${data.client_name})`);
+      setLoggedIn(true);
+    } catch (err) {
+      setMessage(`Error: ${err.message}`);
+      setLoggedIn(false);
+    }
+  };
+
+  const tryAccessDataset = async (dataset) => {
+    try {
+      const res = await fetch(`http://localhost:8000/query-dataset?dataset=${dataset}`, {
+        headers: { Authorization: `Bearer ${window.currentToken}` },
+      });
+      const data = await res.json();
+      setMessage(JSON.stringify(data));
     } catch (err) {
       setMessage(`Error: ${err.message}`);
     }
@@ -72,7 +86,26 @@ export default function Auth() {
           </span>
         )}
       </p>
-      {message && <p style={{ marginTop: 10 }}>{message}</p>}
+
+      {loggedIn && (
+        <div style={{ marginTop: 20 }}>
+          <button
+            onClick={() => tryAccessDataset("client_retailmart")}
+            style={{ display: "block", width: "100%", marginBottom: 10, padding: 8 }}
+          >
+            Try: Access RetailMart (should succeed)
+          </button>
+
+          <button
+            onClick={() => tryAccessDataset("client_foodgo")}
+            style={{ display: "block", width: "100%", padding: 8 }}
+          >
+            Try: Access FoodGo (should be BLOCKED)
+          </button>
+        </div>
+      )}
+
+      {message && <p style={{ marginTop: 10, wordBreak: "break-word" }}>{message}</p>}
     </div>
   );
 }
