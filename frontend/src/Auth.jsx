@@ -29,8 +29,9 @@ export default function Auth() {
         headers: { Authorization: `Bearer ${idToken}` },
       });
       const data = await res.json();
+      setMessage(`Success! Logged in as: ${data.email} (${data.role} at ${data.client_name})`);
+      
 
-      setMessage(`Success! Logged in as: ${data.email}`);
     } catch (err) {
       setMessage(`Error: ${err.message}`);
     }

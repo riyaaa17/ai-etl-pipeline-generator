@@ -15,10 +15,8 @@ app.add_middleware(
 @app.get("/health")
 def health():
     return {"status": "ok"}
-
 @app.get("/me")
 def get_me(user: dict = Depends(get_current_user)):
-    return {
-        "uid": user.get("uid"),
-        "email": user.get("email")
-    }
+    return user
+
+    
