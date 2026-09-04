@@ -7,6 +7,7 @@ from langgraph.graph import StateGraph, END
 
 from kpi_agent import understand_kpi
 from schema_agent import get_relevant_schema
+from transformation_agent import plan_transformations
 from sql_agent import generate_sql, llm
 from validation_agent import validate_sql
 from data_quality_agent import check_data_quality
@@ -18,6 +19,7 @@ class PipelineState(TypedDict):
     bigquery_dataset: str
     kpi_definition: Optional[dict]
     schema: Optional[dict]
+    transformation_plan: Optional[dict]
     sql_query: Optional[str]
     validation_result: Optional[dict]
     correction_attempts: int
@@ -38,9 +40,20 @@ def schema_node(state: PipelineState) -> PipelineState:
     return {**state, "schema": schema}
 
 
+def transformation_node(state: PipelineState) -> PipelineState:
+    print("→ Running Transformation Agent...")
+    plan = plan_transformations(state["kpi_definition"], state["schema"])
+    return {**state, "transformation_plan": plan}
+
+
 def sql_node(state: PipelineState) -> PipelineState:
     print("→ Running SQL Generation Agent...")
-    sql = generate_sql(state["kpi_definition"], state["schema"], state["bigquery_dataset"])
+    sql = generate_sql(
+        state["kpi_definition"],
+        state["schema"],
+        state["bigquery_dataset"],
+        state.get("transformation_plan")
+    )
     return {**state, "sql_query": sql}
 
 
@@ -107,6 +120,7 @@ def build_graph():
 
     graph.add_node("kpi", kpi_node)
     graph.add_node("schema", schema_node)
+    graph.add_node("transformation", transformation_node)
     graph.add_node("sql", sql_node)
     graph.add_node("validate", validation_node)
     graph.add_node("correct", correction_node)
@@ -115,7 +129,8 @@ def build_graph():
 
     graph.set_entry_point("kpi")
     graph.add_edge("kpi", "schema")
-    graph.add_edge("schema", "sql")
+    graph.add_edge("schema", "transformation")
+    graph.add_edge("transformation", "sql")
     graph.add_edge("sql", "validate")
 
     graph.add_conditional_edges(
@@ -145,6 +160,7 @@ if __name__ == "__main__":
         "bigquery_dataset": "client_retailmart",
         "kpi_definition": None,
         "schema": None,
+        "transformation_plan": None,
         "sql_query": None,
         "validation_result": None,
         "correction_attempts": 0,
@@ -161,6 +177,7 @@ if __name__ == "__main__":
     if final_state.get("error"):
         print(f"Error: {final_state['error']}")
     else:
+        print(f"\nTransformation Plan:\n{json.dumps(final_state['transformation_plan'], indent=2)}")
         print(f"\nFinal SQL:\n{final_state['sql_query']}")
         print(f"\nResults ({len(final_state['final_results'])} rows):")
         print(json.dumps(final_state["final_results"][:5], indent=2, default=str))
