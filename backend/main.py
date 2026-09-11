@@ -2,7 +2,11 @@ from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from auth_dependency import get_current_user
 from authorization import check_dataset_access
-
+import sys
+from fastapi import FastAPI, Depends, HTTPException
+sys.path.append("agents")
+from graph import build_graph
+pipeline_app = build_graph()
 app = FastAPI()
 
 app.add_middleware(
@@ -31,5 +35,41 @@ def query_dataset(dataset: str, user: dict = Depends(get_current_user)):
         "message": f"Access granted. Querying dataset: {dataset}",
         "user": user["email"],
         "role": user["role"]
+    }
+@app.post("/generate-pipeline")
+def generate_pipeline(requirement: dict, user: dict = Depends(get_current_user)):
+    """
+    Runs the full multi-agent ETL pipeline for the logged-in user's
+    requirement. The dataset is always the user's own assigned dataset —
+    never taken from the request body, enforcing data isolation.
+    """
+    business_requirement = requirement.get("requirement")
+    if not business_requirement:
+        raise HTTPException(status_code=400, detail="Missing 'requirement' field.")
+
+    initial_state = {
+        "requirement": business_requirement,
+        "bigquery_dataset": user["bigquery_dataset"],  # enforced from user's identity, not input
+        "kpi_definition": None,
+        "schema": None,
+        "transformation_plan": None,
+        "sql_query": None,
+        "validation_result": None,
+        "correction_attempts": 0,
+        "final_results": None,
+        "error": None
+    }
+
+    final_state = pipeline_app.invoke(initial_state)
+
+    if final_state.get("error"):
+        raise HTTPException(status_code=422, detail=final_state["error"])
+
+    return {
+        "kpi_definition": final_state["kpi_definition"],
+        "transformation_plan": final_state["transformation_plan"],
+        "sql_query": final_state["sql_query"],
+        "results": final_state["final_results"],
+        "row_count": len(final_state["final_results"]) if final_state["final_results"] else 0
     }
     
