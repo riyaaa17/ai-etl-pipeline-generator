@@ -4,114 +4,83 @@ import {
   signInWithEmailAndPassword,
 } from "firebase/auth";
 import { auth } from "./firebase";
-import Pipeline from "./Pipeline";
 
-export default function Auth() {
+export default function Auth({ onAuthed }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [mode, setMode] = useState("login"); // "login" or "signup"
-  const [message, setMessage] = useState("");
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [userToken, setUserToken] = useState(null);
-  const [userInfo, setUserInfo] = useState(null);
+  const [mode, setMode] = useState("login");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage("");
+    setError("");
+    setBusy(true);
     try {
-      let userCredential;
+      let cred;
       if (mode === "signup") {
-        userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        cred = await createUserWithEmailAndPassword(auth, email, password);
       } else {
-        userCredential = await signInWithEmailAndPassword(auth, email, password);
+        cred = await signInWithEmailAndPassword(auth, email, password);
       }
-      const idToken = await userCredential.user.getIdToken();
-      window.currentToken = idToken;
-
-      const res = await fetch("http://localhost:8001/me", {
-        headers: { Authorization: `Bearer ${idToken}` },
-      });
-      const data = await res.json();
-      setMessage(`Success! Logged in as: ${data.email} (${data.role} at ${data.client_name})`);
-      setLoggedIn(true);
-      setUserToken(idToken);
-      setUserInfo(data);
+      const idToken = await cred.user.getIdToken();
+      await onAuthed(idToken);
     } catch (err) {
-      setMessage(`Error: ${err.message}`);
-      setLoggedIn(false);
-    }
-  };
-
-  const tryAccessDataset = async (dataset) => {
-    try {
-      const res = await fetch(`http://localhost:8001/query-dataset?dataset=${dataset}`, {
-        headers: { Authorization: `Bearer ${window.currentToken}` },
-      });
-      const data = await res.json();
-      setMessage(JSON.stringify(data));
-    } catch (err) {
-      setMessage(`Error: ${err.message}`);
+      setError(err.message);
+    } finally {
+      setBusy(false);
     }
   };
 
   return (
-    <>
-      <div style={{ maxWidth: 400, margin: "50px auto", fontFamily: "sans-serif" }}>
-        <h2>{mode === "signup" ? "Sign Up" : "Login"}</h2>
+    <div style={{ maxWidth: 420, margin: "0 auto" }}>
+      <div className="card">
+        <h2 className="card-title">{mode === "signup" ? "Create an account" : "Welcome back"}</h2>
+        <p className="card-subtitle">
+          {mode === "signup" ? "Sign up to get started" : "Log in to continue"}
+        </p>
+
         <form onSubmit={handleSubmit}>
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            style={{ display: "block", width: "100%", marginBottom: 10, padding: 8 }}
-            required
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            style={{ display: "block", width: "100%", marginBottom: 10, padding: 8 }}
-            required
-          />
-          <button type="submit" style={{ padding: 8, width: "100%" }}>
-            {mode === "signup" ? "Sign Up" : "Login"}
+          <div className="field-group">
+            <input
+              className="input"
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div className="field-group">
+            <input
+              className="input"
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            className="btn btn-primary"
+            style={{ width: "100%", justifyContent: "center" }}
+            disabled={busy}
+          >
+            {busy ? "Please wait..." : mode === "signup" ? "Sign Up" : "Login"}
           </button>
         </form>
-        <p style={{ marginTop: 10 }}>
+
+        <p style={{ marginTop: 14, marginBottom: 0 }}>
           {mode === "login" ? (
-            <span onClick={() => setMode("signup")} style={{ color: "blue", cursor: "pointer" }}>
-              Need an account? Sign up
-            </span>
+            <span className="link" onClick={() => setMode("signup")}>Need an account? Sign up</span>
           ) : (
-            <span onClick={() => setMode("login")} style={{ color: "blue", cursor: "pointer" }}>
-              Already have an account? Login
-            </span>
+            <span className="link" onClick={() => setMode("login")}>Already have an account? Login</span>
           )}
         </p>
 
-        {loggedIn && (
-          <div style={{ marginTop: 20 }}>
-            <button
-              onClick={() => tryAccessDataset("client_retailmart")}
-              style={{ display: "block", width: "100%", marginBottom: 10, padding: 8 }}
-            >
-              Try: Access RetailMart (should succeed)
-            </button>
-            <button
-              onClick={() => tryAccessDataset("client_foodgo")}
-              style={{ display: "block", width: "100%", padding: 8 }}
-            >
-              Try: Access FoodGo (should be BLOCKED)
-            </button>
-          </div>
-        )}
-
-        {message && <p style={{ marginTop: 10, wordBreak: "break-word" }}>{message}</p>}
+        {error && <div className="alert alert-error">⚠ {error}</div>}
       </div>
-
-      {loggedIn && userToken && <Pipeline token={userToken} userInfo={userInfo} />}
-    </>
+    </div>
   );
 }

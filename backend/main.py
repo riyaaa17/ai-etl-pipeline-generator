@@ -3,6 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from auth_dependency import get_current_user
 from authorization import check_dataset_access
 import sys
+from auth_dependency import get_current_user, get_firebase_identity
+from database import get_db, User, Client
+from sqlalchemy.orm import Session
 from fastapi import FastAPI, Depends, HTTPException
 sys.path.append("agents")
 from graph import build_graph
@@ -23,6 +26,34 @@ def health():
 @app.get("/me")
 def get_me(user: dict = Depends(get_current_user)):
     return user
+@app.get("/clients")
+def list_clients(db: Session = Depends(get_db)):
+    clients = db.query(Client).all()
+    return [{"client_id": c.client_id, "client_name": c.client_name} for c in clients]
+
+
+@app.post("/register-user")
+def register_user(payload: dict, identity: dict = Depends(get_firebase_identity), db: Session = Depends(get_db)):
+    role = payload.get("role")
+    client_id = payload.get("client_id")
+
+    if not role or not client_id:
+        raise HTTPException(status_code=400, detail="role and client_id are required")
+
+    existing = db.query(User).filter(User.firebase_uid == identity["uid"]).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="User already registered")
+
+    new_user = User(
+        firebase_uid=identity["uid"],
+        email=identity["email"],
+        role=role,
+        client_id=client_id
+    )
+    db.add(new_user)
+    db.commit()
+
+    return {"message": "User registered successfully"}
 @app.get("/query-dataset")
 def query_dataset(dataset: str, user: dict = Depends(get_current_user)):
     """
@@ -57,6 +88,7 @@ def generate_pipeline(requirement: dict, user: dict = Depends(get_current_user))
         "validation_result": None,
         "correction_attempts": 0,
         "final_results": None,
+        "documentation": None,
         "error": None
     }
 
@@ -70,6 +102,7 @@ def generate_pipeline(requirement: dict, user: dict = Depends(get_current_user))
         "transformation_plan": final_state["transformation_plan"],
         "sql_query": final_state["sql_query"],
         "results": final_state["final_results"],
+        "documentation": final_state["documentation"],
         "row_count": len(final_state["final_results"]) if final_state["final_results"] else 0
     }
     

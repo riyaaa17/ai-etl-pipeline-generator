@@ -11,6 +11,7 @@ from transformation_agent import plan_transformations
 from sql_agent import generate_sql, llm
 from validation_agent import validate_sql
 from data_quality_agent import check_data_quality
+from documentation_agent import generate_documentation
 
 
 # ---------- STATE ----------
@@ -24,6 +25,7 @@ class PipelineState(TypedDict):
     validation_result: Optional[dict]
     correction_attempts: int
     final_results: Optional[list]
+    documentation: Optional[dict]
     error: Optional[str]
 
 
@@ -99,6 +101,18 @@ def finalize_node(state: PipelineState) -> PipelineState:
     return {**state, "final_results": state["validation_result"]["results"]}
 
 
+def documentation_node(state: PipelineState) -> PipelineState:
+    print("→ Running Documentation Agent...")
+    row_count = len(state["final_results"]) if state["final_results"] else 0
+    doc = generate_documentation(
+        state["kpi_definition"],
+        state["transformation_plan"],
+        state["sql_query"],
+        row_count
+    )
+    return {**state, "documentation": doc}
+
+
 def fail_node(state: PipelineState) -> PipelineState:
     print("→ Max correction attempts reached. Pipeline failed.")
     return {**state, "error": "Could not generate valid SQL after multiple attempts."}
@@ -125,6 +139,7 @@ def build_graph():
     graph.add_node("validate", validation_node)
     graph.add_node("correct", correction_node)
     graph.add_node("finalize", finalize_node)
+    graph.add_node("documentation", documentation_node)
     graph.add_node("fail", fail_node)
 
     graph.set_entry_point("kpi")
@@ -144,7 +159,8 @@ def build_graph():
     )
 
     graph.add_edge("correct", "validate")  # loop back to re-validate
-    graph.add_edge("finalize", END)
+    graph.add_edge("finalize", "documentation")
+    graph.add_edge("documentation", END)
     graph.add_edge("fail", END)
 
     return graph.compile()
@@ -165,6 +181,7 @@ if __name__ == "__main__":
         "validation_result": None,
         "correction_attempts": 0,
         "final_results": None,
+        "documentation": None,
         "error": None
     }
 
@@ -181,3 +198,4 @@ if __name__ == "__main__":
         print(f"\nFinal SQL:\n{final_state['sql_query']}")
         print(f"\nResults ({len(final_state['final_results'])} rows):")
         print(json.dumps(final_state["final_results"][:5], indent=2, default=str))
+        print(f"\nDocumentation:\n{json.dumps(final_state['documentation'], indent=2)}")
