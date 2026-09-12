@@ -12,6 +12,7 @@ from sql_agent import generate_sql, llm
 from validation_agent import validate_sql
 from data_quality_agent import check_data_quality
 from documentation_agent import generate_documentation
+from monitoring_agent import generate_monitoring_report
 
 
 # ---------- STATE ----------
@@ -26,6 +27,7 @@ class PipelineState(TypedDict):
     correction_attempts: int
     final_results: Optional[list]
     documentation: Optional[dict]
+    monitoring_report: Optional[dict]
     error: Optional[str]
 
 
@@ -113,6 +115,13 @@ def documentation_node(state: PipelineState) -> PipelineState:
     return {**state, "documentation": doc}
 
 
+def monitoring_node(state: PipelineState) -> PipelineState:
+    print("→ Running Monitoring Agent...")
+    kpi_name = state["kpi_definition"].get("kpi_name", "this metric") if state["kpi_definition"] else "this metric"
+    report = generate_monitoring_report(state["final_results"], kpi_name)
+    return {**state, "monitoring_report": report}
+
+
 def fail_node(state: PipelineState) -> PipelineState:
     print("→ Max correction attempts reached. Pipeline failed.")
     return {**state, "error": "Could not generate valid SQL after multiple attempts."}
@@ -140,6 +149,7 @@ def build_graph():
     graph.add_node("correct", correction_node)
     graph.add_node("finalize", finalize_node)
     graph.add_node("documentation", documentation_node)
+    graph.add_node("monitoring", monitoring_node)
     graph.add_node("fail", fail_node)
 
     graph.set_entry_point("kpi")
@@ -160,7 +170,8 @@ def build_graph():
 
     graph.add_edge("correct", "validate")  # loop back to re-validate
     graph.add_edge("finalize", "documentation")
-    graph.add_edge("documentation", END)
+    graph.add_edge("documentation", "monitoring")
+    graph.add_edge("monitoring", END)
     graph.add_edge("fail", END)
 
     return graph.compile()
@@ -182,6 +193,7 @@ if __name__ == "__main__":
         "correction_attempts": 0,
         "final_results": None,
         "documentation": None,
+        "monitoring_report": None,
         "error": None
     }
 
@@ -199,3 +211,4 @@ if __name__ == "__main__":
         print(f"\nResults ({len(final_state['final_results'])} rows):")
         print(json.dumps(final_state["final_results"][:5], indent=2, default=str))
         print(f"\nDocumentation:\n{json.dumps(final_state['documentation'], indent=2)}")
+        print(f"\nMonitoring Report:\n{json.dumps(final_state['monitoring_report'], indent=2)}")

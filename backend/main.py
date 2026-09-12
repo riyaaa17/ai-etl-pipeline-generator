@@ -89,6 +89,7 @@ def generate_pipeline(requirement: dict, user: dict = Depends(get_current_user))
         "correction_attempts": 0,
         "final_results": None,
         "documentation": None,
+        "monitoring_report": None,
         "error": None
     }
 
@@ -103,6 +104,7 @@ def generate_pipeline(requirement: dict, user: dict = Depends(get_current_user))
         "sql_query": final_state["sql_query"],
         "results": final_state["final_results"],
         "documentation": final_state["documentation"],
+        "monitoring_report": final_state["monitoring_report"],
         "row_count": len(final_state["final_results"]) if final_state["final_results"] else 0
     }
     

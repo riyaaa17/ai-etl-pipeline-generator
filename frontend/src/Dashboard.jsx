@@ -161,6 +161,18 @@ export default function Dashboard({ token, userInfo, onLogout }) {
 
         {result && !loading && (
           <div className="results-fade-in">
+            {result.monitoring_report?.anomaly_count > 0 && (
+  <div className="monitor-alert">
+    <div className="monitor-alert-header">
+      🚨 {result.monitoring_report.anomaly_count} anomal{result.monitoring_report.anomaly_count === 1 ? "y" : "ies"} detected
+    </div>
+    <ul className="monitor-alert-list">
+      {result.monitoring_report.alerts.map((alert, i) => (
+        <li key={i}>{alert}</li>
+      ))}
+    </ul>
+  </div>
+)}
             <div className="section-label">🎯 KPI Definition</div>
             <pre className="code-block">{JSON.stringify(result.kpi_definition, null, 2)}</pre>
 
