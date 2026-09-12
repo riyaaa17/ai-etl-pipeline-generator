@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-
+import PipelineFlow from "./PipelineFlow";
 const API_BASE = "http://localhost:8001";
 
 const PIPELINE_STEPS = [
@@ -169,7 +169,12 @@ export default function Dashboard({ token, userInfo, onLogout }) {
 
             <div className="section-label">📝 Generated SQL</div>
             <pre className="code-block code-block-dark">{result.sql_query}</pre>
-            
+            <div className="section-label">🔀 Pipeline Flow</div>
+<PipelineFlow
+  documentation={result.documentation}
+  transformationPlan={result.transformation_plan}
+  kpiDefinition={result.kpi_definition}
+/>
             {result.documentation && !result.documentation.error && (
   <>
     <div className="section-label">📄 Documentation</div>
