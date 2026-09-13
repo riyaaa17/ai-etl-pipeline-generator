@@ -32,16 +32,22 @@ class PipelineState(TypedDict):
 
 
 # ---------- NODES ----------
-def kpi_node(state: PipelineState) -> PipelineState:
-    print("→ Running KPI Understanding Agent...")
-    kpi = understand_kpi(state["requirement"])
-    return {**state, "kpi_definition": kpi}
-
-
 def schema_node(state: PipelineState) -> PipelineState:
     print("→ Running Schema Agent...")
     schema = get_relevant_schema(state["bigquery_dataset"])
     return {**state, "schema": schema}
+
+
+def kpi_node(state: PipelineState) -> PipelineState:
+    print("→ Running KPI Understanding Agent...")
+    kpi = understand_kpi(state["requirement"], state.get("schema"))
+    if kpi.get("error") == "out_of_scope":
+        return {
+            **state,
+            "kpi_definition": kpi,
+            "error": f"Request is outside your authorized data scope: {kpi.get('reason', 'Unknown reason.')}"
+        }
+    return {**state, "kpi_definition": kpi}
 
 
 def transformation_node(state: PipelineState) -> PipelineState:
@@ -84,7 +90,6 @@ Available Schema:
 Fix the SQL query. Respond ONLY with the corrected raw SQL, no markdown, no explanation.
 """
     response = llm.invoke([{"role": "user", "content": correction_prompt}])
-    
     corrected_sql = response.content
     if isinstance(corrected_sql, list):
         corrected_sql = "".join(
@@ -92,6 +97,7 @@ Fix the SQL query. Respond ONLY with the corrected raw SQL, no markdown, no expl
             for part in corrected_sql
         )
     corrected_sql = corrected_sql.strip()
+
     if corrected_sql.startswith("```"):
         corrected_sql = corrected_sql.split("```")[1]
         if corrected_sql.startswith("sql"):
@@ -130,11 +136,19 @@ def monitoring_node(state: PipelineState) -> PipelineState:
 
 
 def fail_node(state: PipelineState) -> PipelineState:
-    print("→ Max correction attempts reached. Pipeline failed.")
-    return {**state, "error": "Could not generate valid SQL after multiple attempts."}
+    print("→ Pipeline failed.")
+    if not state.get("error"):
+        return {**state, "error": "Could not generate valid SQL after multiple attempts."}
+    return state
 
 
 # ---------- ROUTING LOGIC ----------
+def route_after_kpi(state: PipelineState) -> str:
+    if state.get("error"):
+        return "fail"
+    return "transformation"
+
+
 def route_after_validation(state: PipelineState) -> str:
     if state["validation_result"]["valid"]:
         return "finalize"
@@ -148,8 +162,8 @@ def route_after_validation(state: PipelineState) -> str:
 def build_graph():
     graph = StateGraph(PipelineState)
 
-    graph.add_node("kpi", kpi_node)
     graph.add_node("schema", schema_node)
+    graph.add_node("kpi", kpi_node)
     graph.add_node("transformation", transformation_node)
     graph.add_node("sql", sql_node)
     graph.add_node("validate", validation_node)
@@ -159,9 +173,18 @@ def build_graph():
     graph.add_node("monitoring", monitoring_node)
     graph.add_node("fail", fail_node)
 
-    graph.set_entry_point("kpi")
-    graph.add_edge("kpi", "schema")
-    graph.add_edge("schema", "transformation")
+    graph.set_entry_point("schema")
+    graph.add_edge("schema", "kpi")
+
+    graph.add_conditional_edges(
+        "kpi",
+        route_after_kpi,
+        {
+            "transformation": "transformation",
+            "fail": "fail"
+        }
+    )
+
     graph.add_edge("transformation", "sql")
     graph.add_edge("sql", "validate")
 
@@ -175,7 +198,7 @@ def build_graph():
         }
     )
 
-    graph.add_edge("correct", "validate")  # loop back to re-validate
+    graph.add_edge("correct", "validate")
     graph.add_edge("finalize", "documentation")
     graph.add_edge("documentation", "monitoring")
     graph.add_edge("monitoring", END)

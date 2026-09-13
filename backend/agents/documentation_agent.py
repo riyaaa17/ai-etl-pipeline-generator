@@ -1,15 +1,14 @@
 import os
 import json
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_groq import ChatGroq
 from dotenv import load_dotenv
 
 load_dotenv()
-llm = ChatGoogleGenerativeAI(
-    model="gemini-3.6-flash",
+llm = ChatGroq(
+    model="openai/gpt-oss-120b",
     temperature=0,
-    google_api_key=os.getenv("GEMINI_API_KEY")
+    api_key=os.getenv("GROQ_API_KEY")
 )
-
 
 
 DOC_SYSTEM_PROMPT = """You are a Documentation Agent for a data engineering system.
