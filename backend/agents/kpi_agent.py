@@ -1,14 +1,13 @@
 import os
 import json
-from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from dotenv import load_dotenv
 
 load_dotenv()
-
-llm = ChatOpenAI(
-    model="gpt-4o",
+llm = ChatGoogleGenerativeAI(
+    model="gemini-3.6-flash",
     temperature=0,
-    api_key=os.getenv("OPENAI_API_KEY")
+    google_api_key=os.getenv("GEMINI_API_KEY")
 )
 
 KPI_SYSTEM_PROMPT = """You are a KPI Understanding Agent for a data engineering system.
@@ -36,7 +35,13 @@ def understand_kpi(requirement: str) -> dict:
         {"role": "user", "content": requirement}
     ])
 
-    content = response.content.strip()
+    content = response.content
+    if isinstance(content, list):
+        content = "".join(
+            part.get("text", "") if isinstance(part, dict) else str(part)
+            for part in content
+        )
+    content = content.strip()
     # Strip markdown code fences if the model adds them despite instructions
     if content.startswith("```"):
         content = content.split("```")[1]

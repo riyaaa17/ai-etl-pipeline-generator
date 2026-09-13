@@ -1,5 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import PipelineFlow from "./PipelineFlow";
+import DataBrowser from "./DataBrowser";
+import SqlRunner from "./SqlRunner";
+import UserManagement from "./UserManagement";
+import PipelineHistoryPanel from "./PipelineHistory";
+
 const API_BASE = "http://localhost:8001";
 
 const PIPELINE_STEPS = [
@@ -24,11 +29,15 @@ export default function Dashboard({ token, userInfo, onLogout }) {
   const [error, setError] = useState("");
   const stepIntervalRef = useRef(null);
 
+  const isViewer = userInfo?.role === "Viewer";
+  const isDataEngineer = userInfo?.role === "Data Engineer";
+  const isAdmin = userInfo?.role === "Admin";
+
   useEffect(() => () => clearInterval(stepIntervalRef.current), []);
 
   const handleGenerate = async (overrideText) => {
     const text = overrideText ?? requirement;
-    if (!text.trim()) return;
+    if (!text.trim() || isViewer) return;
     if (overrideText) setRequirement(overrideText);
 
     setLoading(true);
@@ -58,14 +67,17 @@ export default function Dashboard({ token, userInfo, onLogout }) {
       } catch {
         throw new Error("Server returned an invalid response.");
       }
-
       if (!res.ok) {
-        if (res.status === 401) setError("Your session has expired. Please log in again.");
-        else if (res.status === 403) setError("You're not authorized to run this query.");
-        else if (res.status === 422) setError(`Pipeline could not complete: ${data.detail || "Unknown error."}`);
-        else setError(data.detail || `Request failed (status ${res.status}).`);
-        return;
-      }
+  if (res.status === 401) setError("Your session has expired. Please log in again.");
+  else if (res.status === 403) setError(data.detail || "You're not authorized to run this query.");
+  else if (res.status === 422) setError(`Pipeline could not complete: ${data.detail || "Unknown error."}`);
+  else if (res.status === 503) setError(data.detail || "The AI service is temporarily unavailable.");
+  else setError(data.detail || `Request failed (status ${res.status}).`);
+  return;
+}
+
+      
+      
       setResult(data);
     } catch (err) {
       if (err.name === "AbortError") setError("The pipeline is taking longer than expected. Try again.");
@@ -104,16 +116,27 @@ export default function Dashboard({ token, userInfo, onLogout }) {
         <h2 className="card-title">✨ ETL Pipeline Generator</h2>
         <p className="card-subtitle">Describe the KPI you need in plain English</p>
 
+        {isViewer && (
+          <div className="alert alert-info" style={{ marginBottom: 16, marginTop: 0 }}>
+            👁️ You're logged in as a <strong>Viewer</strong>. This role has read-only access —
+            contact your Admin for pipeline generation permissions. You can still browse raw data below.
+          </div>
+        )}
+
         <textarea
           className="textarea"
           value={requirement}
           onChange={(e) => setRequirement(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="e.g. Calculate monthly revenue for 2025, excluding cancelled and refunded orders."
-          disabled={loading}
+          placeholder={
+            isViewer
+              ? "Viewers cannot generate new pipelines."
+              : "e.g. Calculate monthly revenue for 2025, excluding cancelled and refunded orders."
+          }
+          disabled={loading || isViewer}
         />
 
-        {!result && !loading && (
+        {!result && !loading && !isViewer && (
           <div className="sample-prompts">
             {SAMPLE_PROMPTS.map((p) => (
               <span key={p} className="sample-chip" onClick={() => handleGenerate(p)}>
@@ -124,7 +147,11 @@ export default function Dashboard({ token, userInfo, onLogout }) {
         )}
 
         <div style={{ marginTop: 14, display: "flex", alignItems: "center" }}>
-          <button className="btn btn-primary" onClick={() => handleGenerate()} disabled={loading || !requirement.trim()}>
+          <button
+            className="btn btn-primary"
+            onClick={() => handleGenerate()}
+            disabled={loading || !requirement.trim() || isViewer}
+          >
             {loading ? "Generating..." : "Generate KPI Pipeline"}
           </button>
           <span className="hint">Ctrl+Enter to submit</span>
@@ -149,7 +176,7 @@ export default function Dashboard({ token, userInfo, onLogout }) {
 
         {error && <div className="alert alert-error">⚠ {error}</div>}
 
-        {!result && !loading && !error && (
+        {!result && !loading && !error && !isViewer && (
           <div className="empty-canvas">
             <div className="empty-canvas-icon">📊</div>
             <div className="empty-canvas-title">No pipeline generated yet</div>
@@ -162,17 +189,19 @@ export default function Dashboard({ token, userInfo, onLogout }) {
         {result && !loading && (
           <div className="results-fade-in">
             {result.monitoring_report?.anomaly_count > 0 && (
-  <div className="monitor-alert">
-    <div className="monitor-alert-header">
-      🚨 {result.monitoring_report.anomaly_count} anomal{result.monitoring_report.anomaly_count === 1 ? "y" : "ies"} detected
-    </div>
-    <ul className="monitor-alert-list">
-      {result.monitoring_report.alerts.map((alert, i) => (
-        <li key={i}>{alert}</li>
-      ))}
-    </ul>
-  </div>
-)}
+              <div className="monitor-alert">
+                <div className="monitor-alert-header">
+                  🚨 {result.monitoring_report.anomaly_count} anomal
+                  {result.monitoring_report.anomaly_count === 1 ? "y" : "ies"} detected
+                </div>
+                <ul className="monitor-alert-list">
+                  {result.monitoring_report.alerts.map((alert, i) => (
+                    <li key={i}>{alert}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             <div className="section-label">🎯 KPI Definition</div>
             <pre className="code-block">{JSON.stringify(result.kpi_definition, null, 2)}</pre>
 
@@ -181,69 +210,72 @@ export default function Dashboard({ token, userInfo, onLogout }) {
 
             <div className="section-label">📝 Generated SQL</div>
             <pre className="code-block code-block-dark">{result.sql_query}</pre>
+
             <div className="section-label">🔀 Pipeline Flow</div>
-<PipelineFlow
-  documentation={result.documentation}
-  transformationPlan={result.transformation_plan}
-  kpiDefinition={result.kpi_definition}
-/>
+            <PipelineFlow
+              documentation={result.documentation}
+              transformationPlan={result.transformation_plan}
+              kpiDefinition={result.kpi_definition}
+            />
+
             {result.documentation && !result.documentation.error && (
-  <>
-    <div className="section-label">📄 Documentation</div>
-    <div className="doc-card">
-      <div className="doc-title">{result.documentation.title}</div>
-      <p className="doc-summary">{result.documentation.summary}</p>
+              <>
+                <div className="section-label">📄 Documentation</div>
+                <div className="doc-card">
+                  <div className="doc-title">{result.documentation.title}</div>
+                  <p className="doc-summary">{result.documentation.summary}</p>
 
-      <div className="doc-grid">
-        <div>
-          <div className="doc-label">Data Sources</div>
-          <div className="doc-tags">
-            {result.documentation.data_sources.map((s) => (
-              <span key={s} className="doc-tag">{s}</span>
-            ))}
-          </div>
-        </div>
-        <div>
-          <div className="doc-label">Columns Used</div>
-          <div className="doc-tags">
-            {result.documentation.columns_used.map((c) => (
-              <span key={c} className="doc-tag">{c}</span>
-            ))}
-          </div>
-        </div>
-      </div>
+                  <div className="doc-grid">
+                    <div>
+                      <div className="doc-label">Data Sources</div>
+                      <div className="doc-tags">
+                        {result.documentation.data_sources.map((s) => (
+                          <span key={s} className="doc-tag">{s}</span>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="doc-label">Columns Used</div>
+                      <div className="doc-tags">
+                        {result.documentation.columns_used.map((c) => (
+                          <span key={c} className="doc-tag">{c}</span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
 
-      <div className="doc-label" style={{ marginTop: 14 }}>Filters Applied</div>
-      <ul className="doc-list">
-        {result.documentation.filters_applied.map((f, i) => (
-          <li key={i}>{f}</li>
-        ))}
-      </ul>
+                  <div className="doc-label" style={{ marginTop: 14 }}>Filters Applied</div>
+                  <ul className="doc-list">
+                    {result.documentation.filters_applied.map((f, i) => (
+                      <li key={i}>{f}</li>
+                    ))}
+                  </ul>
 
-      <div className="doc-label">Transformations</div>
-      <ul className="doc-list">
-        {result.documentation.transformations_applied.map((t, i) => (
-          <li key={i}>{t}</li>
-        ))}
-      </ul>
+                  <div className="doc-label">Transformations</div>
+                  <ul className="doc-list">
+                    {result.documentation.transformations_applied.map((t, i) => (
+                      <li key={i}>{t}</li>
+                    ))}
+                  </ul>
 
-      {result.documentation.notes?.length > 0 && (
-        <>
-          <div className="doc-label">⚠ Notes & Caveats</div>
-          <ul className="doc-list doc-notes">
-            {result.documentation.notes.map((n, i) => (
-              <li key={i}>{n}</li>
-            ))}
-          </ul>
-        </>
-      )}
+                  {result.documentation.notes?.length > 0 && (
+                    <>
+                      <div className="doc-label">⚠ Notes & Caveats</div>
+                      <ul className="doc-list doc-notes">
+                        {result.documentation.notes.map((n, i) => (
+                          <li key={i}>{n}</li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
 
-      <div className="doc-footer">
-        Generated {new Date(result.documentation.generated_at).toLocaleString()}
-      </div>
-    </div>
-  </>
-)}
+                  <div className="doc-footer">
+                    Generated {new Date(result.documentation.generated_at).toLocaleString()}
+                  </div>
+                </div>
+              </>
+            )}
+
             <div className="section-label">📈 Results ({result.row_count} rows)</div>
             {result.row_count === 0 ? (
               <div className="empty-state">No rows returned. Try adjusting your requirement.</div>
@@ -272,6 +304,28 @@ export default function Dashboard({ token, userInfo, onLogout }) {
           </div>
         )}
       </div>
+            {isViewer && (
+        <div style={{ marginTop: 24 }}>
+          <DataBrowser token={token} userInfo={userInfo} />
+        </div>
+      )}
+
+      {(isDataEngineer || isAdmin) && (
+        <div style={{ marginTop: 24 }}>
+          <SqlRunner token={token} userInfo={userInfo} />
+        </div>
+      )}
+      {isAdmin && (
+        <div style={{ marginTop: 24 }}>
+          <UserManagement token={token} userInfo={userInfo} />
+        </div>
+      )}
+      {isAdmin && (
+  <div style={{ marginTop: 24 }}>
+    <PipelineHistoryPanel token={token} userInfo={userInfo} />
+  </div>
+)}
     </div>
   );
 }
+      

@@ -1,15 +1,16 @@
 import os
 import json
-from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from dotenv import load_dotenv
 
 load_dotenv()
-
-llm = ChatOpenAI(
-    model="gpt-4o",
+llm = ChatGoogleGenerativeAI(
+    model="gemini-3.6-flash",
     temperature=0,
-    api_key=os.getenv("OPENAI_API_KEY")
+    google_api_key=os.getenv("GEMINI_API_KEY")
 )
+
+
 
 DOC_SYSTEM_PROMPT = """You are a Documentation Agent for a data engineering system.
 
@@ -64,7 +65,13 @@ Generate the documentation.
         {"role": "user", "content": prompt}
     ])
 
-    content = response.content.strip()
+    content = response.content
+    if isinstance(content, list):
+        content = "".join(
+            part.get("text", "") if isinstance(part, dict) else str(part)
+            for part in content
+        )
+    content = content.strip()
     if content.startswith("```"):
         content = content.split("```")[1]
         if content.startswith("json"):

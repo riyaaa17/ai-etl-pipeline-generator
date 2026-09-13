@@ -1,14 +1,14 @@
 import os
 import json
-from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from dotenv import load_dotenv
 
 load_dotenv()
 
-llm = ChatOpenAI(
-    model="gpt-4o",
+llm = ChatGoogleGenerativeAI(
+    model="gemini-3.6-flash",
     temperature=0,
-    api_key=os.getenv("OPENAI_API_KEY")
+    google_api_key=os.getenv("GEMINI_API_KEY")
 )
 
 SQL_SYSTEM_PROMPT = """You are a SQL Generation Agent for a BigQuery-based ETL system.
@@ -42,8 +42,14 @@ Generate the BigQuery SQL query for this KPI.
         {"role": "system", "content": SQL_SYSTEM_PROMPT},
         {"role": "user", "content": prompt}
     ])
-
-    sql = response.content.strip()
+    sql = response.content
+    if isinstance(sql, list):
+        sql = "".join(
+            part.get("text", "") if isinstance(part, dict) else str(part)
+            for part in sql
+        )
+    sql = sql.strip()
+    
     if sql.startswith("```"):
         sql = sql.split("```")[1]
         if sql.startswith("sql"):

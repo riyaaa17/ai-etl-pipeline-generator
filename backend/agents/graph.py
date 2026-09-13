@@ -84,7 +84,14 @@ Available Schema:
 Fix the SQL query. Respond ONLY with the corrected raw SQL, no markdown, no explanation.
 """
     response = llm.invoke([{"role": "user", "content": correction_prompt}])
-    corrected_sql = response.content.strip()
+    
+    corrected_sql = response.content
+    if isinstance(corrected_sql, list):
+        corrected_sql = "".join(
+            part.get("text", "") if isinstance(part, dict) else str(part)
+            for part in corrected_sql
+        )
+    corrected_sql = corrected_sql.strip()
     if corrected_sql.startswith("```"):
         corrected_sql = corrected_sql.split("```")[1]
         if corrected_sql.startswith("sql"):
