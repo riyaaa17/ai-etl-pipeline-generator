@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from auth_dependency import get_current_user, get_firebase_identity
 from authorization import check_dataset_access
-from database import get_db, User, Client, PipelineHistory
+from database import get_db, User, Client, PipelineHistory, DashboardWidget
 
 sys.path.append("agents")
 from graph import build_graph
@@ -20,6 +20,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+KNOWN_CLIENT_NAMES = ["RetailMart", "FoodGo", "TravelEase", "TechStore", "HealthPlus"]
 
 
 @app.get("/health")
@@ -185,11 +187,8 @@ def update_user_role(user_id: int, payload: dict, user: dict = Depends(get_curre
     return {"message": f"Updated {target_user.email}'s role to {new_role}"}
 
 
-@app.get("/admin/history")
+@app.get("/history")
 def get_pipeline_history(user: dict = Depends(get_current_user), db: Session = Depends(get_db)):
-    if user["role"] != "Admin":
-        raise HTTPException(status_code=403, detail="Only Admins can view pipeline history.")
-
     records = (
         db.query(PipelineHistory, User.email)
         .join(User, PipelineHistory.user_id == User.user_id)
@@ -215,6 +214,105 @@ def get_pipeline_history(user: dict = Depends(get_current_user), db: Session = D
     ]
 
 
+@app.get("/dashboard/widgets")
+def list_dashboard_widgets(user: dict = Depends(get_current_user), db: Session = Depends(get_db)):
+    widgets = (
+        db.query(DashboardWidget)
+        .filter(DashboardWidget.client_id == user["client_id"])
+        .order_by(DashboardWidget.created_at.desc())
+        .all()
+    )
+    return [
+        {
+            "widget_id": w.widget_id,
+            "title": w.title,
+            "requirement": w.requirement,
+            "chart_type": w.chart_type,
+            "kpi_definition": w.kpi_definition,
+            "results": w.results,
+            "insight": w.insight,
+            "monitoring_report": w.monitoring_report,
+            "sql_query": w.sql_query,
+            "created_at": w.created_at.isoformat() if w.created_at else None
+        }
+        for w in widgets
+    ]
+
+
+@app.post("/dashboard/widgets")
+def create_dashboard_widget(payload: dict, user: dict = Depends(get_current_user), db: Session = Depends(get_db)):
+    if user["role"] == "Viewer":
+        raise HTTPException(status_code=403, detail="Viewers cannot create dashboard widgets.")
+
+    db_user = db.query(User).filter(User.firebase_uid == user["uid"]).first()
+
+    widget = DashboardWidget(
+        user_id=db_user.user_id,
+        client_id=user["client_id"],
+        title=payload.get("title", "Untitled KPI"),
+        requirement=payload.get("requirement", ""),
+        chart_type=payload.get("chart_type", "bar"),
+        kpi_definition=payload.get("kpi_definition"),
+        results=payload.get("results"),
+        insight=payload.get("insight"),
+        monitoring_report=payload.get("monitoring_report"),
+        sql_query=payload.get("sql_query"),
+        bigquery_dataset=user["bigquery_dataset"]
+    )
+    db.add(widget)
+    db.commit()
+    db.refresh(widget)
+
+    return {"message": "Widget added to dashboard", "widget_id": widget.widget_id}
+
+
+@app.delete("/dashboard/widgets/{widget_id}")
+def delete_dashboard_widget(widget_id: int, user: dict = Depends(get_current_user), db: Session = Depends(get_db)):
+    if user["role"] == "Viewer":
+        raise HTTPException(status_code=403, detail="Viewers cannot delete dashboard widgets.")
+
+    widget = db.query(DashboardWidget).filter(
+        DashboardWidget.widget_id == widget_id,
+        DashboardWidget.client_id == user["client_id"]
+    ).first()
+
+    if not widget:
+        raise HTTPException(status_code=404, detail="Widget not found in your organization.")
+
+    db.delete(widget)
+    db.commit()
+
+    return {"message": "Widget removed"}
+
+
+@app.patch("/dashboard/widgets/{widget_id}/chart-type")
+def update_widget_chart_type(widget_id: int, payload: dict, user: dict = Depends(get_current_user), db: Session = Depends(get_db)):
+    """
+    Updates the chart type used to render a saved widget, without
+    re-running any query.
+    """
+    if user["role"] == "Viewer":
+        raise HTTPException(status_code=403, detail="Viewers cannot modify widgets.")
+
+    valid_types = ["bar", "column", "line", "area", "pie", "donut", "scatter", "histogram"]
+    chart_type = payload.get("chart_type")
+    if chart_type not in valid_types:
+        raise HTTPException(status_code=400, detail=f"chart_type must be one of: {valid_types}")
+
+    widget = db.query(DashboardWidget).filter(
+        DashboardWidget.widget_id == widget_id,
+        DashboardWidget.client_id == user["client_id"]
+    ).first()
+
+    if not widget:
+        raise HTTPException(status_code=404, detail="Widget not found in your organization.")
+
+    widget.chart_type = chart_type
+    db.commit()
+
+    return {"message": "Chart type updated", "chart_type": chart_type}
+
+
 @app.post("/generate-pipeline")
 def generate_pipeline(requirement: dict, user: dict = Depends(get_current_user), db: Session = Depends(get_db)):
     if user["role"] == "Viewer":
@@ -226,6 +324,15 @@ def generate_pipeline(requirement: dict, user: dict = Depends(get_current_user),
     business_requirement = requirement.get("requirement")
     if not business_requirement:
         raise HTTPException(status_code=400, detail="Missing 'requirement' field.")
+
+    requirement_lower = business_requirement.lower()
+    for client_name in KNOWN_CLIENT_NAMES:
+        if client_name.lower() in requirement_lower and client_name.lower() != user["client_name"].lower():
+            raise HTTPException(
+                status_code=403,
+                detail=f"Access denied. You are authorized to access data for '{user['client_name']}' only, "
+                       f"and cannot query or reference '{client_name}'."
+            )
 
     db_user = db.query(User).filter(User.firebase_uid == user["uid"]).first()
 
@@ -241,6 +348,7 @@ def generate_pipeline(requirement: dict, user: dict = Depends(get_current_user),
         "final_results": None,
         "documentation": None,
         "monitoring_report": None,
+        "insight": None,
         "error": None
     }
 
@@ -301,5 +409,6 @@ def generate_pipeline(requirement: dict, user: dict = Depends(get_current_user),
         "results": final_state["final_results"],
         "row_count": row_count,
         "documentation": final_state["documentation"],
-        "monitoring_report": final_state["monitoring_report"]
+        "monitoring_report": final_state["monitoring_report"],
+        "insight": final_state["insight"]
     }

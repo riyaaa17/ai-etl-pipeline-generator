@@ -9,7 +9,7 @@ export default function PipelineHistoryPanel({ token, userInfo }) {
   const [expandedId, setExpandedId] = useState(null);
 
   useEffect(() => {
-    fetch(`${API_BASE}/admin/history`, {
+    fetch(`${API_BASE}/history`, { 
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())

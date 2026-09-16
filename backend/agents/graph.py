@@ -13,6 +13,7 @@ from validation_agent import validate_sql
 from data_quality_agent import check_data_quality
 from documentation_agent import generate_documentation
 from monitoring_agent import generate_monitoring_report
+from insights_agent import generate_insight
 
 
 # ---------- STATE ----------
@@ -28,6 +29,7 @@ class PipelineState(TypedDict):
     final_results: Optional[list]
     documentation: Optional[dict]
     monitoring_report: Optional[dict]
+    insight: Optional[dict]
     error: Optional[str]
 
 
@@ -135,6 +137,13 @@ def monitoring_node(state: PipelineState) -> PipelineState:
     return {**state, "monitoring_report": report}
 
 
+def insights_node(state: PipelineState) -> PipelineState:
+    print("→ Running Insights Agent...")
+    kpi_name = state["kpi_definition"].get("kpi_name", "this metric") if state["kpi_definition"] else "this metric"
+    insight = generate_insight(kpi_name, state["final_results"])
+    return {**state, "insight": insight}
+
+
 def fail_node(state: PipelineState) -> PipelineState:
     print("→ Pipeline failed.")
     if not state.get("error"):
@@ -171,6 +180,7 @@ def build_graph():
     graph.add_node("finalize", finalize_node)
     graph.add_node("documentation", documentation_node)
     graph.add_node("monitoring", monitoring_node)
+    graph.add_node("insights", insights_node)
     graph.add_node("fail", fail_node)
 
     graph.set_entry_point("schema")
@@ -201,7 +211,8 @@ def build_graph():
     graph.add_edge("correct", "validate")
     graph.add_edge("finalize", "documentation")
     graph.add_edge("documentation", "monitoring")
-    graph.add_edge("monitoring", END)
+    graph.add_edge("monitoring", "insights")
+    graph.add_edge("insights", END)
     graph.add_edge("fail", END)
 
     return graph.compile()
@@ -224,6 +235,7 @@ if __name__ == "__main__":
         "final_results": None,
         "documentation": None,
         "monitoring_report": None,
+        "insight": None,
         "error": None
     }
 
@@ -242,3 +254,4 @@ if __name__ == "__main__":
         print(json.dumps(final_state["final_results"][:5], indent=2, default=str))
         print(f"\nDocumentation:\n{json.dumps(final_state['documentation'], indent=2)}")
         print(f"\nMonitoring Report:\n{json.dumps(final_state['monitoring_report'], indent=2)}")
+        print(f"\nInsight:\n{json.dumps(final_state['insight'], indent=2)}")

@@ -3,6 +3,7 @@ from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, DateT
 from sqlalchemy.orm import sessionmaker, declarative_base
 from datetime import datetime
 from dotenv import load_dotenv
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, DateTime, JSON
 
 load_dotenv()
 
@@ -37,6 +38,21 @@ class PipelineHistory(Base):
     row_count = Column(Integer)
     status = Column(String, nullable=False)
     error_message = Column(String)
+    created_at = Column(DateTime, default=datetime.utcnow)
+class DashboardWidget(Base):
+    __tablename__ = "dashboard_widgets"
+    widget_id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.user_id"))
+    client_id = Column(Integer, ForeignKey("clients.client_id"))
+    title = Column(String, nullable=False)
+    requirement = Column(String, nullable=False)
+    chart_type = Column(String, default="bar")
+    kpi_definition = Column(JSON)
+    results = Column(JSON)
+    insight = Column(JSON)
+    monitoring_report = Column(JSON)
+    sql_query = Column(String)
+    bigquery_dataset = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow)
 def get_db():
     db = SessionLocal()

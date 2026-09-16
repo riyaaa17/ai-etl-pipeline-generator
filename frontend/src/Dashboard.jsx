@@ -4,6 +4,7 @@ import DataBrowser from "./DataBrowser";
 import SqlRunner from "./SqlRunner";
 import UserManagement from "./UserManagement";
 import PipelineHistoryPanel from "./PipelineHistory";
+import InsightsPanel from "./InsightsPanel";
 
 const API_BASE = "http://localhost:8001";
 
@@ -27,6 +28,9 @@ export default function Dashboard({ token, userInfo, onLogout }) {
   const [stepIndex, setStepIndex] = useState(0);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
+  const [savedMessage, setSavedMessage] = useState("");
+  const [selectedChartType, setSelectedChartType] = useState("bar");
+  const [saving, setSaving] = useState(false);
   const stepIntervalRef = useRef(null);
 
   const isViewer = userInfo?.role === "Viewer";
@@ -44,6 +48,8 @@ export default function Dashboard({ token, userInfo, onLogout }) {
     setError("");
     setResult(null);
     setStepIndex(0);
+    setSavedMessage("");
+    setSelectedChartType("bar");
 
     stepIntervalRef.current = setInterval(() => {
       setStepIndex((p) => (p < PIPELINE_STEPS.length - 1 ? p + 1 : p));
@@ -67,17 +73,15 @@ export default function Dashboard({ token, userInfo, onLogout }) {
       } catch {
         throw new Error("Server returned an invalid response.");
       }
-      if (!res.ok) {
-  if (res.status === 401) setError("Your session has expired. Please log in again.");
-  else if (res.status === 403) setError(data.detail || "You're not authorized to run this query.");
-  else if (res.status === 422) setError(`Pipeline could not complete: ${data.detail || "Unknown error."}`);
-  else if (res.status === 503) setError(data.detail || "The AI service is temporarily unavailable.");
-  else setError(data.detail || `Request failed (status ${res.status}).`);
-  return;
-}
 
-      
-      
+      if (!res.ok) {
+        if (res.status === 401) setError("Your session has expired. Please log in again.");
+        else if (res.status === 403) setError(data.detail || "You're not authorized to run this query.");
+        else if (res.status === 422) setError(`Pipeline could not complete: ${data.detail || "Unknown error."}`);
+        else if (res.status === 503) setError(data.detail || "The AI service is temporarily unavailable.");
+        else setError(data.detail || `Request failed (status ${res.status}).`);
+        return;
+      }
       setResult(data);
     } catch (err) {
       if (err.name === "AbortError") setError("The pipeline is taking longer than expected. Try again.");
@@ -87,6 +91,38 @@ export default function Dashboard({ token, userInfo, onLogout }) {
       clearInterval(stepIntervalRef.current);
       clearTimeout(timeoutId);
       setLoading(false);
+    }
+  };
+
+  const handleAddToDashboard = async () => {
+    if (!result || saving) return;
+    setSaving(true);
+    try {
+      const res = await fetch(`${API_BASE}/dashboard/widgets`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          title: result.kpi_definition?.kpi_name || "Untitled KPI",
+          requirement,
+          chart_type: selectedChartType,
+          kpi_definition: result.kpi_definition,
+          results: result.results,
+          insight: result.insight,
+          monitoring_report: result.monitoring_report,
+          sql_query: result.sql_query,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setSavedMessage("✓ Added to Dashboard");
+        setTimeout(() => setSavedMessage(""), 3000);
+      } else {
+        setSavedMessage(data.detail || "Could not save widget.");
+      }
+    } catch (err) {
+      setSavedMessage(err.message);
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -119,7 +155,8 @@ export default function Dashboard({ token, userInfo, onLogout }) {
         {isViewer && (
           <div className="alert alert-info" style={{ marginBottom: 16, marginTop: 0 }}>
             👁️ You're logged in as a <strong>Viewer</strong>. This role has read-only access —
-            contact your Admin for pipeline generation permissions. You can still browse raw data below.
+            contact your Admin for pipeline generation permissions. You can still browse raw data
+            and view past pipeline history below.
           </div>
         )}
 
@@ -218,6 +255,35 @@ export default function Dashboard({ token, userInfo, onLogout }) {
               kpiDefinition={result.kpi_definition}
             />
 
+            {result.row_count > 0 && (
+              <>
+                <div
+                  className="section-label"
+                  style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
+                >
+                  <span>💡 Insights & Chart</span>
+                  <button
+                    className="btn btn-secondary"
+                    style={{ width: "auto", padding: "6px 14px", fontSize: 12 }}
+                    onClick={handleAddToDashboard}
+                    disabled={saving}
+                  >
+                    {saving ? "Saving..." : "📌 Add to Dashboard"}
+                  </button>
+                </div>
+                {savedMessage && (
+                  <div className="alert alert-success" style={{ marginTop: 0, marginBottom: 12 }}>
+                    {savedMessage}
+                  </div>
+                )}
+                <InsightsPanel
+                  insight={result.insight}
+                  results={result.results}
+                  onChartTypeChange={setSelectedChartType}
+                />
+              </>
+            )}
+
             {result.documentation && !result.documentation.error && (
               <>
                 <div className="section-label">📄 Documentation</div>
@@ -304,7 +370,8 @@ export default function Dashboard({ token, userInfo, onLogout }) {
           </div>
         )}
       </div>
-            {isViewer && (
+
+      {isViewer && (
         <div style={{ marginTop: 24 }}>
           <DataBrowser token={token} userInfo={userInfo} />
         </div>
@@ -315,17 +382,16 @@ export default function Dashboard({ token, userInfo, onLogout }) {
           <SqlRunner token={token} userInfo={userInfo} />
         </div>
       )}
+
       {isAdmin && (
         <div style={{ marginTop: 24 }}>
           <UserManagement token={token} userInfo={userInfo} />
         </div>
       )}
-      {isAdmin && (
-  <div style={{ marginTop: 24 }}>
-    <PipelineHistoryPanel token={token} userInfo={userInfo} />
-  </div>
-)}
+
+      <div style={{ marginTop: 24 }}>
+        <PipelineHistoryPanel token={token} userInfo={userInfo} />
+      </div>
     </div>
   );
 }
-      
