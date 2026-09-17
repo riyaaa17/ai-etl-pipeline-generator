@@ -224,7 +224,7 @@ if __name__ == "__main__":
     app = build_graph()
 
     initial_state = {
-        "requirement": "Calculate monthly revenue for 2025, excluding cancelled and refunded orders.",
+        "requirement": "Calculate monthly revenue and average order value for 2025, excluding cancelled and refunded orders.",
         "bigquery_dataset": "client_retailmart",
         "kpi_definition": None,
         "schema": None,

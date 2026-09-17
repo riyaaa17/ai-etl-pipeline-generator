@@ -17,11 +17,11 @@ const CHART_TYPE_OPTIONS = [
   { id: "histogram", label: "📶" },
 ];
 
-function getValueKey(row) {
-  return Object.keys(row).find((k) => typeof row[k] === "number");
+function getValueKeys(row) {
+  return Object.keys(row).filter((k) => typeof row[k] === "number");
 }
-function getLabelKey(row, valueKey) {
-  return Object.keys(row).find((k) => k !== valueKey);
+function getLabelKey(row, valueKeys) {
+  return Object.keys(row).find((k) => !valueKeys.includes(k));
 }
 
 function isDateLike(label) {
@@ -33,9 +33,10 @@ function isDateLike(label) {
 function computeStat(widget) {
   const results = widget.results;
   if (!results || results.length === 0) return null;
-  const valueKey = getValueKey(results[0]);
-  const labelKey = getLabelKey(results[0], valueKey);
-  if (!valueKey) return null;
+  const valueKeys = getValueKeys(results[0]);
+  const labelKey = getLabelKey(results[0], valueKeys);
+  if (valueKeys.length === 0) return null;
+  const valueKey = valueKeys[0]; // Key Metrics card summarizes the first metric only
 
   const values = results.map((r) => r[valueKey]).filter((v) => v !== null && v !== undefined);
   if (values.length === 0) return null;
@@ -69,6 +70,7 @@ function computeStat(widget) {
     overallChange: Math.round(overallChange * 10) / 10,
     overallDirection: overallChange > 0 ? "up" : overallChange < 0 ? "down" : "flat",
     valueKey,
+    metricCount: valueKeys.length,
   };
 }
 
@@ -229,7 +231,10 @@ export default function DashboardBuilder({ token, userInfo }) {
                   title="Click to view full chart"
                 >
                   {hasAnomaly && <div className="stat-anomaly-badge">🚨 {widget.monitoring_report.anomaly_count}</div>}
-                  <div className="stat-summary-title">{widget.title}</div>
+                  <div className="stat-summary-title">
+                    {widget.title}
+                    {stat.metricCount > 1 && <span className="stat-multi-badge"> +{stat.metricCount - 1} more</span>}
+                  </div>
                   <div className="stat-summary-value">{formatNumber(stat.latest)}</div>
 
                   {stat.isTimeSeries ? (
@@ -276,9 +281,9 @@ export default function DashboardBuilder({ token, userInfo }) {
             {widgets.map((w) => {
               const results = w.results;
               if (!results || results.length === 0) return null;
-              const valueKey = getValueKey(results[0]);
-              const labelKey = getLabelKey(results[0], valueKey);
-              if (!valueKey) return null;
+              const valueKeys = getValueKeys(results[0]);
+              const labelKey = getLabelKey(results[0], valueKeys);
+              if (valueKeys.length === 0) return null;
 
               const hasAnomaly = w.monitoring_report?.anomaly_count > 0;
 
@@ -293,6 +298,13 @@ export default function DashboardBuilder({ token, userInfo }) {
                       <div className="widget-title">
                         {hasAnomaly && <span style={{ marginRight: 6 }}>🚨</span>}
                         {w.title}
+                        {valueKeys.length > 1 && (
+                          <span className="widget-metric-tags">
+                            {valueKeys.map((k) => (
+                              <span key={k} className="widget-metric-tag">{k}</span>
+                            ))}
+                          </span>
+                        )}
                       </div>
                       <div className="widget-query">"{w.requirement}"</div>
                     </div>
@@ -327,7 +339,7 @@ export default function DashboardBuilder({ token, userInfo }) {
                     </div>
                   )}
 
-                  <ChartRenderer type={w.chart_type || "bar"} results={results} valueKey={valueKey} labelKey={labelKey} height={220} />
+                  <ChartRenderer type={w.chart_type || "bar"} results={results} valueKeys={valueKeys} labelKey={labelKey} height={220} />
 
                   {hasAnomaly && (
                     <div className="widget-anomaly-alert">

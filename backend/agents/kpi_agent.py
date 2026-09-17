@@ -15,24 +15,26 @@ KPI_SYSTEM_PROMPT = """You are a KPI Understanding Agent for a secure, multi-cli
 
 You will be given:
 1. A natural-language business requirement from a user
-2. The actual database schema the user is authorized to access (their organization's tables and columns only)
+2. The actual database schema the user is authorized to access
 
-Your job is to extract a structured KPI definition — BUT ONLY if the requirement genuinely relates to
-concepts, entities, or data plausibly present in the given schema.
+Extract a structured KPI definition. The requirement may ask for ONE metric or MULTIPLE
+related metrics together (e.g. "monthly revenue, retention rate, and average order value").
 
-If the requirement references a business domain, entity, or concept that clearly does NOT belong to
-the given schema (for example: asking about "flights" or "bookings" when the schema only has restaurant/
-delivery tables, or asking about "patients" when the schema is retail-focused, or naming a specific
-company/organization that is not the user's own), you must NOT attempt to force-fit it. Instead, return
-an error response.
+If the requirement references a business domain, entity, or concept that clearly does NOT
+belong to the given schema, return an out_of_scope error instead of forcing a fit.
 
 Respond ONLY with valid JSON in ONE of these two exact formats:
 
 If the requirement is valid for this schema:
 {
-    "kpi_name": "string",
-    "formula": "string (e.g. SUM(order_amount))",
+    "kpi_name": "string - short combined title, e.g. 'Monthly Revenue, Retention Rate & AOV'",
     "time_period": "string (e.g. Monthly, Yearly, Daily)",
+    "metrics": [
+        {
+            "metric_name": "string - short name, e.g. 'Revenue'",
+            "formula": "string (e.g. SUM(order_amount))"
+        }
+    ],
     "filters": ["list of filter conditions as strings"],
     "required_concepts": ["list of business concepts needed"]
 }
@@ -43,15 +45,17 @@ If the requirement does NOT match this schema's domain:
     "reason": "one short sentence explaining what concept/entity was requested that doesn't belong to this dataset"
 }
 
+Always populate "metrics" as a list, even for a single metric (a list with one item).
 Do not include any explanation, markdown formatting, or text outside the JSON object.
 """
+
 
 def understand_kpi(requirement: str, schema: dict = None) -> dict:
     """
     Takes a natural-language business requirement and the user's authorized
-    schema, and returns a structured KPI definition. If the requirement
-    references concepts outside the given schema's domain, returns an
-    out_of_scope error instead of hallucinating a KPI.
+    schema, and returns a structured KPI definition supporting one or more
+    metrics. If the requirement references concepts outside the given
+    schema's domain, returns an out_of_scope error instead.
     """
     schema_context = f"\n\nAuthorized Schema (tables and columns you may reference):\n{json.dumps(schema, indent=2)}" if schema else ""
 
@@ -77,12 +81,17 @@ def understand_kpi(requirement: str, schema: dict = None) -> dict:
         content = content.strip()
 
     try:
-        return json.loads(content)
+        parsed = json.loads(content)
+        # Backward-compat: if the model returns old-style single "formula",
+        # normalize it into the metrics list format.
+        if "metrics" not in parsed and "formula" in parsed:
+            parsed["metrics"] = [{"metric_name": parsed.get("kpi_name", "Value"), "formula": parsed["formula"]}]
+        return parsed
     except json.JSONDecodeError:
         return {"error": "Failed to parse KPI response", "raw_response": content}
 
 
 if __name__ == "__main__":
-    test_requirement = "Calculate monthly revenue and customer retention for 2025. Exclude cancelled and refunded orders."
+    test_requirement = "Calculate monthly revenue and average order value for 2025."
     result = understand_kpi(test_requirement)
     print(json.dumps(result, indent=2))
