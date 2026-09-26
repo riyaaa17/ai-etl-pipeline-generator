@@ -47,14 +47,146 @@ function buildHistogramBins(results, valueKey, binCount = 6) {
   return bins;
 }
 
-// Pie/Donut can only show one metric at a time (they're proportion charts),
-// so when there are multiple metrics, the first one is used and a note
-// is shown explaining why the others aren't included.
+function formatChartNumber(n) {
+  if (n === null || n === undefined) return "—";
+  if (Math.abs(n) >= 1_000_000) return `${(n / 1_000_000).toFixed(2)}M`;
+  if (Math.abs(n) >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+  return n.toLocaleString();
+}
+
+function InvalidChartMessage({ reason }) {
+  return (
+    <div style={{
+      height: 200, display: "flex", alignItems: "center", justifyContent: "center",
+      color: "var(--color-text-dim)", fontSize: 13, fontStyle: "italic", textAlign: "center", padding: 20
+    }}>
+      ⚠ Invalid visualization for this query{reason ? ` — ${reason}` : ""}
+    </div>
+  );
+}
+
+// Note: Grouped Bar, Heatmap, and Box Plot are intentionally excluded.
+// Those chart types need multi-series or multi-dimensional data, but
+// every KPI pipeline here produces a single label + one or more values
+// per row. Rendering those chart types on this data shape would be
+// misleading rather than useful.
 export function ChartRenderer({ type, results, valueKeys, labelKey, height = 280 }) {
   const tooltipStyle = { background: "#141a2b", border: "1px solid #262f47", borderRadius: 8, fontSize: 12 };
   const axisProps = { stroke: "#8b93ab", fontSize: 12 };
   const keys = Array.isArray(valueKeys) ? valueKeys : [valueKeys];
   const primaryKey = keys[0];
+
+  // Wide-format detection: a single row where the metrics themselves are
+  // the thing being compared (e.g. "revenue 2025 vs revenue 2026" returns
+  // one row with two numeric columns and no separate label column). In
+  // this case we pivot the metric names into categories so every chart
+  // type can render all values meaningfully.
+  const isWideFormat = keys.length > 1 && (results.length === 1 || !labelKey);
+
+  if (isWideFormat) {
+    const pivoted = keys.map((k) => ({ metric: k, value: results[0][k] }));
+
+    if (type === "histogram") {
+      return <InvalidChartMessage reason="not enough data points for a distribution" />;
+    }
+
+    if (type === "pie" || type === "donut") {
+      return (
+        <ResponsiveContainer width="100%" height={height}>
+          <PieChart>
+            <Pie
+              data={pivoted}
+              dataKey="value"
+              nameKey="metric"
+              cx="50%"
+              cy="50%"
+              innerRadius={type === "donut" ? height / 5 : 0}
+              outerRadius={height / 2.8}
+              label={({ name, value, percent }) => `${name}: ${formatChartNumber(value)} (${(percent * 100).toFixed(1)}%)`}
+            >
+              {pivoted.map((_, index) => (
+                <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
+              ))}
+            </Pie>
+            <Tooltip contentStyle={tooltipStyle} />
+            <Legend wrapperStyle={{ fontSize: 12, color: "#8b93ab" }} />
+          </PieChart>
+        </ResponsiveContainer>
+      );
+    }
+
+    if (type === "scatter") {
+      const scatterData = pivoted.map((r, i) => ({ x: i, y: r.value, label: r.metric }));
+      return (
+        <ResponsiveContainer width="100%" height={height}>
+          <ScatterChart margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#262f47" />
+            <XAxis dataKey="x" {...axisProps} tickFormatter={(i) => pivoted[i]?.metric ?? ""} />
+            <YAxis dataKey="y" {...axisProps} />
+            <Tooltip contentStyle={tooltipStyle} labelFormatter={(i) => pivoted[i]?.metric ?? ""} />
+            <Scatter data={scatterData} fill="#f59e0b" />
+          </ScatterChart>
+        </ResponsiveContainer>
+      );
+    }
+
+    if (type === "line") {
+      return (
+        <ResponsiveContainer width="100%" height={height}>
+          <LineChart data={pivoted} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#262f47" />
+            <XAxis dataKey="metric" {...axisProps} />
+            <YAxis {...axisProps} />
+            <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: "#e8ebf5" }} />
+            <Line type="monotone" dataKey="value" stroke="#8b5cf6" strokeWidth={2} dot={{ r: 5 }} />
+          </LineChart>
+        </ResponsiveContainer>
+      );
+    }
+
+    if (type === "area") {
+      return (
+        <ResponsiveContainer width="100%" height={height}>
+          <AreaChart data={pivoted} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#262f47" />
+            <XAxis dataKey="metric" {...axisProps} />
+            <YAxis {...axisProps} />
+            <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: "#e8ebf5" }} />
+            <Area type="monotone" dataKey="value" stroke="#06b6d4" fill="rgba(6,182,212,0.2)" strokeWidth={2} />
+          </AreaChart>
+        </ResponsiveContainer>
+      );
+    }
+
+    if (type === "column") {
+      return (
+        <ResponsiveContainer width="100%" height={height}>
+          <BarChart data={pivoted} layout="vertical" margin={{ top: 10, right: 20, left: 20, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#262f47" />
+            <XAxis type="number" {...axisProps} />
+            <YAxis type="category" dataKey="metric" {...axisProps} width={100} />
+            <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: "#e8ebf5" }} />
+            <Bar dataKey="value" fill="#ec4899" radius={[0, 6, 6, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      );
+    }
+
+    // default: bar (also covers explicit "bar" type)
+    return (
+      <ResponsiveContainer width="100%" height={height}>
+        <BarChart data={pivoted} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#262f47" />
+          <XAxis dataKey="metric" {...axisProps} />
+          <YAxis {...axisProps} />
+          <Tooltip contentStyle={tooltipStyle} labelStyle={{ color: "#e8ebf5" }} />
+          <Bar dataKey="value" fill="#6366f1" radius={[6, 6, 0, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    );
+  }
+
+  // ---- Normal (multi-row) rendering below ----
 
   if (type === "line") {
     return (
@@ -95,7 +227,7 @@ export function ChartRenderer({ type, results, valueKeys, labelKey, height = 280
       <div>
         {keys.length > 1 && (
           <div style={{ fontSize: 11, color: "#8b93ab", marginBottom: 8, fontStyle: "italic" }}>
-            Showing "{primaryKey}" only — pie/donut charts display one metric at a time.
+            Showing "{primaryKey}" only — pie/donut charts display one metric at a time across categories.
           </div>
         )}
         <ResponsiveContainer width="100%" height={height}>
@@ -108,7 +240,7 @@ export function ChartRenderer({ type, results, valueKeys, labelKey, height = 280
               cy="50%"
               innerRadius={type === "donut" ? height / 5 : 0}
               outerRadius={height / 2.8}
-              label={(entry) => entry[labelKey]}
+              label={({ name, value, percent }) => `${name}: ${formatChartNumber(value)} (${(percent * 100).toFixed(1)}%)`}
             >
               {results.map((_, index) => (
                 <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
@@ -123,6 +255,9 @@ export function ChartRenderer({ type, results, valueKeys, labelKey, height = 280
   }
 
   if (type === "scatter") {
+    if (results.length < 2) {
+      return <InvalidChartMessage reason="scatter plots need more than one data point" />;
+    }
     const scatterData = results.map((r, i) => ({ x: i, y: r[primaryKey], label: r[labelKey] }));
     return (
       <ResponsiveContainer width="100%" height={height}>
@@ -138,6 +273,9 @@ export function ChartRenderer({ type, results, valueKeys, labelKey, height = 280
   }
 
   if (type === "histogram") {
+    if (results.length < 4) {
+      return <InvalidChartMessage reason="not enough data points for a meaningful distribution" />;
+    }
     const bins = buildHistogramBins(results, primaryKey);
     return (
       <ResponsiveContainer width="100%" height={height}>

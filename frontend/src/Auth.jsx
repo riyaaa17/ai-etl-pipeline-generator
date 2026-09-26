@@ -33,54 +33,50 @@ export default function Auth({ onAuthed }) {
   };
 
   return (
-    <div style={{ maxWidth: 420, margin: "0 auto" }}>
-      <div className="card">
-        <h2 className="card-title">{mode === "signup" ? "Create an account" : "Welcome back"}</h2>
-        <p className="card-subtitle">
-          {mode === "signup" ? "Sign up to get started" : "Log in to continue"}
-        </p>
+    <div className="split-auth-card">
+      <h2 className="card-title">{mode === "signup" ? "Create an account" : "Welcome back"}</h2>
+      <p className="card-subtitle">{mode === "signup" ? "Sign up to get started" : "Log in to continue"}</p>
 
-        <form onSubmit={handleSubmit}>
-          <div className="field-group">
-            <input
-              className="input"
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div className="field-group">
-            <input
-              className="input"
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-          <button
-            type="submit"
-            className="btn btn-primary"
-            style={{ width: "100%", justifyContent: "center" }}
-            disabled={busy}
-          >
-            {busy ? "Please wait..." : mode === "signup" ? "Sign Up" : "Login"}
-          </button>
-        </form>
+      <form onSubmit={handleSubmit}>
+        <div className="field-group">
+          <input
+            className="input"
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
+        <div className="field-group">
+          <input
+            className="input"
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
+        <button
+          type="submit"
+          className="btn btn-primary"
+          style={{ width: "100%", justifyContent: "center" }}
+          disabled={busy}
+        >
+          {busy ? "Please wait..." : mode === "signup" ? "Sign Up" : "Login"}
+        </button>
+      </form>
 
-        <p style={{ marginTop: 14, marginBottom: 0 }}>
-          {mode === "login" ? (
-            <span className="link" onClick={() => setMode("signup")}>Need an account? Sign up</span>
-          ) : (
-            <span className="link" onClick={() => setMode("login")}>Already have an account? Login</span>
-          )}
-        </p>
+      <p style={{ marginTop: 14, marginBottom: 0, textAlign: "center" }}>
+        {mode === "login" ? (
+          <span className="link" onClick={() => setMode("signup")}>Need an account? Sign up</span>
+        ) : (
+          <span className="link" onClick={() => setMode("login")}>Already have an account? Login</span>
+        )}
+      </p>
 
-        {error && <div className="alert alert-error">⚠ {error}</div>}
-      </div>
+      {error && <div className="alert alert-error">⚠ {error}</div>}
     </div>
   );
 }

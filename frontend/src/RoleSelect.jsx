@@ -61,8 +61,7 @@ export default function RoleSelect({ token, onRegistered }) {
   };
 
   return (
-    <div style={{ maxWidth: 620, margin: "0 auto" }}>
-      <div className="card">
+    <div className="split-auth-card" style={{ maxWidth: 680 }}>
         <h2 className="card-title">Set up your access</h2>
         <p className="card-subtitle">Choose your organization and role to continue</p>
 
@@ -113,7 +112,7 @@ export default function RoleSelect({ token, onRegistered }) {
         </button>
 
         {error && <div className="alert alert-error">⚠ {error}</div>}
-      </div>
+      
     </div>
   );
 }
