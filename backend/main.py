@@ -15,7 +15,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173","https://logical-hallway-499706-c3.web.app"],
+    allow_origins=["https://logical-hallway-499706-c3.firebaseapp.com","https://logical-hallway-499706-c3.web.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
