@@ -521,3 +521,12 @@ infrastructure-level isolation.
 * Multi-dimensional chart types (grouped bar, heatmap) once queries support
 two-dimensional breakdowns.
 
+# Deployed backend on Google Cloud Run and Frontend on Firebase 
+Frontend: 
+https://logical-hallway-499706-c3.web.app/
+
+Backend API: 
+https://etl-backend-555034914563.us-central1.run.app
+
+API Documentation (Swagger): 
+https://etl-backend-555034914563.us-central1.run.app/docs
